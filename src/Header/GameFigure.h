@@ -16,20 +16,20 @@ namespace chess{
     public:
         GameFigure(Color Color, char figureChar, Position& pos);
         virtual ~GameFigure() = default;
-        virtual bool checkMove(const Move& move, const BoardView& boardView) const;
+        virtual bool isMoveLegal(const Move& move, const BoardView& boardView) const;
         virtual void printChar() const ;
     protected:
         virtual void printColor() const;
-        virtual bool checkMovementDirection(const Move& Move) const = 0;
-        virtual bool checkPiecesInMovment( const Move& Move, const BoardView& BoardView) const = 0;
+        virtual bool isAllowedDirection(const Move& Move) const = 0;
+        virtual bool isPathClear( const Move& Move, const BoardView& BoardView) const = 0;
     };
 
 
     class Pawn : public GameFigure{
     private: 
 
-        virtual bool checkMovementDirection(const Move& Move) const override;
-        virtual bool checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const override;
+        virtual bool isAllowedDirection(const Move& Move) const override;
+        virtual bool isPathClear(const Move& Move, const BoardView& BoardView) const override;
     public:
         Pawn(Color color, Position& pos);
     };
@@ -38,8 +38,8 @@ namespace chess{
     {
     private:
 
-        virtual bool checkMovementDirection( const Move& Move) const override;
-        virtual bool checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const override;
+        virtual bool isAllowedDirection( const Move& Move) const override;
+        virtual bool isPathClear(const Move& Move, const BoardView& BoardView) const override;
     public:
         Rook(Color color, Position& pos);
     };
@@ -48,8 +48,8 @@ namespace chess{
     class Bishop : public GameFigure
     {
     private:
-        virtual bool checkMovementDirection(const Move& Move) const override;
-        virtual bool checkPiecesInMovment(const Move& Move,const BoardView& BoardView) const override;
+        virtual bool isAllowedDirection(const Move& Move) const override;
+        virtual bool isPathClear(const Move& Move,const BoardView& BoardView) const override;
     public:
         Bishop(Color color, Position& pos);
     };
@@ -58,8 +58,8 @@ namespace chess{
     class Horse : public GameFigure
     {
     private:
-        virtual bool checkMovementDirection(const Move& Move) const override;
-        virtual bool checkPiecesInMovment(const Move& Move,const BoardView& BoardView) const override;
+        virtual bool isAllowedDirection(const Move& Move) const override;
+        virtual bool isPathClear(const Move& Move,const BoardView& BoardView) const override;
     public:
         Horse(Color color, Position& pos);
     };
@@ -68,8 +68,8 @@ namespace chess{
     class Queen : public GameFigure
     {
     private:
-        virtual bool checkMovementDirection(const Move& Move) const override;
-        virtual bool checkPiecesInMovment(const Move& Move,const BoardView& BoardView) const override;
+        virtual bool isAllowedDirection(const Move& Move) const override;
+        virtual bool isPathClear(const Move& Move,const BoardView& BoardView) const override;
     public:
         Queen(Color color, Position& pos);
     };
@@ -78,8 +78,8 @@ namespace chess{
     class King : public GameFigure
     {
     private:
-        virtual bool checkMovementDirection(const Move& Move) const override;
-        virtual bool checkPiecesInMovment(const Move& Move,const BoardView& BoardView) const override;
+        virtual bool isAllowedDirection(const Move& Move) const override;
+        virtual bool isPathClear(const Move& Move,const BoardView& BoardView) const override;
     public:
         King(Color color, Position& pos);
     };

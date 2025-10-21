@@ -84,7 +84,7 @@ namespace chess{
     }
 
     bool Board::isMoveLegal(const Move& move) const{
-        if(!m_BoardPositions[move.m_PiecePosition.index()]->checkMove(move, m_BoardView)) 
+        if(!m_BoardPositions[move.m_PiecePosition.index()]->isMoveLegal(move, m_BoardView)) 
             return false;
 
         //Brauchen check ob nach dem zug spiel ungütiger zustand ist, wie der eigene könig ist im schach

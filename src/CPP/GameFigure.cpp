@@ -22,15 +22,15 @@ namespace chess{
         printColor();
         std::cout <<m_FigureChar;
     }
-    bool GameFigure::checkMove(const Move& Move, const BoardView& BoardView) const {
-        if(checkMovementDirection(Move) && checkPiecesInMovment(Move, BoardView))
+    bool GameFigure::isMoveLegal(const Move& Move, const BoardView& BoardView) const {
+        if(isAllowedDirection(Move) && isPathClear(Move, BoardView))
             return true;
 
         return false;
     }
 
 
-    bool Rook::checkMovementDirection(const Move& Move) const {
+    bool Rook::isAllowedDirection(const Move& Move) const {
         int x_OffSet = Move.m_OffSetPosition.x;
         int y_OffSet = Move.m_OffSetPosition.y;
         if((x_OffSet && !y_OffSet) || (!x_OffSet && y_OffSet))
@@ -38,26 +38,37 @@ namespace chess{
 
         return false;        
     }
-    bool Rook::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {
-        
+    bool Rook::isPathClear(const Move& Move, const BoardView& BoardView) const {
+        int stepX = (Move.m_OffSetPosition.x == 0) ? 0 : (Move.m_OffSetPosition.x > 0 ? 1 : -1);
+        int stepY = (Move.m_OffSetPosition.y == 0) ? 0 : (Move.m_OffSetPosition.y > 0 ? 1 : -1);
+
+        int x = Move.m_PiecePosition.x + stepX;
+        int y = Move.m_PiecePosition.y + stepY;
+
+        while(x != Move.m_DesiredPosition.x || y != Move.m_DesiredPosition.y){
+            if(BoardView.getFigureAt({ x, y}))
+                return false;
+            x+=stepX;
+            y+=stepY;
+        }
 
         return true;
     }
 
-    bool Pawn::checkMovementDirection(const Move& Move) const {}
-    bool Pawn::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
+    bool Pawn::isAllowedDirection(const Move& Move) const {}
+    bool Pawn::isPathClear(const Move& Move, const BoardView& BoardView) const {}
 
-    bool Bishop::checkMovementDirection(const Move& Move) const {}
-    bool Bishop::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
+    bool Bishop::isAllowedDirection(const Move& Move) const {}
+    bool Bishop::isPathClear(const Move& Move, const BoardView& BoardView) const {}
 
-    bool Horse::checkMovementDirection(const Move& Move) const {}
-    bool Horse::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
+    bool Horse::isAllowedDirection(const Move& Move) const {}
+    bool Horse::isPathClear(const Move& Move, const BoardView& BoardView) const {}
 
-    bool Queen::checkMovementDirection(const Move& Move) const {}
-    bool Queen::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
+    bool Queen::isAllowedDirection(const Move& Move) const {}
+    bool Queen::isPathClear(const Move& Move, const BoardView& BoardView) const {}
 
-    bool King::checkMovementDirection(const Move& Move) const {}
-    bool King::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
+    bool King::isAllowedDirection(const Move& Move) const {}
+    bool King::isPathClear(const Move& Move, const BoardView& BoardView) const {}
 
 
 
