@@ -1,1 +1,0 @@
-/usr/bin/g++ -g CMakeFiles/chess.dir/src/CPP/Main.cpp.o CMakeFiles/chess.dir/src/CPP/Board.cpp.o CMakeFiles/chess.dir/src/CPP/GameFigure.cpp.o CMakeFiles/chess.dir/src/CPP/Move.cpp.o CMakeFiles/chess.dir/src/CPP/BoardView.cpp.o -o bin/chess 
