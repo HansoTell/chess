@@ -32,7 +32,6 @@ namespace chess{
         virtual bool checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const override;
     public:
         Pawn(Color color, Position& pos);
-        virtual bool checkMove(const Move& move, const BoardView& boardView) const override;
     };
 
     class Rook : public GameFigure
@@ -53,7 +52,6 @@ namespace chess{
         virtual bool checkPiecesInMovment(const Move& Move,const BoardView& BoardView) const override;
     public:
         Bishop(Color color, Position& pos);
-        virtual bool checkMove(const Move& move, const BoardView& boardView) const override;
     };
 
     
@@ -64,7 +62,6 @@ namespace chess{
         virtual bool checkPiecesInMovment(const Move& Move,const BoardView& BoardView) const override;
     public:
         Horse(Color color, Position& pos);
-        virtual bool checkMove(const Move& move, const BoardView& boardView) const override;
     };
 
 
@@ -75,7 +72,6 @@ namespace chess{
         virtual bool checkPiecesInMovment(const Move& Move,const BoardView& BoardView) const override;
     public:
         Queen(Color color, Position& pos);
-        virtual bool checkMove(const Move& move, const BoardView& boardView) const override;
     };
 
 
@@ -86,7 +82,6 @@ namespace chess{
         virtual bool checkPiecesInMovment(const Move& Move,const BoardView& BoardView) const override;
     public:
         King(Color color, Position& pos);
-        virtual bool checkMove(const Move& move, const BoardView& boardView) const override;
     };
 
 

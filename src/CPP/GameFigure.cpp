@@ -39,20 +39,25 @@ namespace chess{
         return false;        
     }
     bool Rook::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {
-
+        
 
         return true;
     }
 
+    bool Pawn::checkMovementDirection(const Move& Move) const {}
+    bool Pawn::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
 
+    bool Bishop::checkMovementDirection(const Move& Move) const {}
+    bool Bishop::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
 
-    bool Pawn::checkMove(const Move& move, const BoardView& boardView) const {}
-    bool Bishop::checkMove(const Move& move, const BoardView& boardView) const {}
-    bool Horse::checkMove(const Move& move, const BoardView& boardView) const {}
-    bool Queen::checkMove(const Move& move, const BoardView& boardView) const {}
-    bool King::checkMove(const Move& move, const BoardView& boardView) const {}
+    bool Horse::checkMovementDirection(const Move& Move) const {}
+    bool Horse::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
 
+    bool Queen::checkMovementDirection(const Move& Move) const {}
+    bool Queen::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
 
+    bool King::checkMovementDirection(const Move& Move) const {}
+    bool King::checkPiecesInMovment(const Move& Move, const BoardView& BoardView) const {}
 
 
 
