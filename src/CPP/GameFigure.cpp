@@ -39,17 +39,16 @@ namespace chess{
         return false;        
     }
     bool Rook::isPathClear(const Move& Move, const BoardView& BoardView) const {
-        int stepX = (Move.m_OffSetPosition.x == 0) ? 0 : (Move.m_OffSetPosition.x > 0 ? 1 : -1);
-        int stepY = (Move.m_OffSetPosition.y == 0) ? 0 : (Move.m_OffSetPosition.y > 0 ? 1 : -1);
-
-        int x = Move.m_PiecePosition.x + stepX;
-        int y = Move.m_PiecePosition.y + stepY;
-
-        while(x != Move.m_DesiredPosition.x || y != Move.m_DesiredPosition.y){
-            if(BoardView.getFigureAt({ x, y}))
+        //1d:
+        int endXPosToCheck;
+        int smaller;
+        int bigger;
+        if(Move.m_OffSetPosition.x<0){
+        
+        } 
+        for(int i = smaller; i< bigger;i++){
+            if(BoardView.getFigureAt( {i, Move.m_PiecePosition.y} ))
                 return false;
-            x+=stepX;
-            y+=stepY;
         }
 
         return true;
