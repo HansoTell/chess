@@ -1,0 +1,3 @@
+/home/janis-rolf/code/cpp/chess/build/CMakeFiles/chess.dir
+/home/janis-rolf/code/cpp/chess/build/CMakeFiles/edit_cache.dir
+/home/janis-rolf/code/cpp/chess/build/CMakeFiles/rebuild_cache.dir
