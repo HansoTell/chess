@@ -3,7 +3,7 @@
 
 namespace chess{
     Board::Board(const std::string& file) : m_BoardPositions{}, m_BoardView(&m_BoardPositions) {
-        m_Figures.reserve(32 * sizeof(std::unique_ptr<GameFigure>));
+        m_Figures.reserve(32 * sizeof(GameFigure));
         boardinit(file);
     }
 
@@ -37,11 +37,10 @@ namespace chess{
                 
                 int colorInt = data_figure[0].get<int>();
                 Color pieceColor = static_cast<Color>(colorInt);
-                std::unique_ptr<GameFigure> figure = GameFigureFactory(figure_Type, pieceColor, piecePosition);
-                if(figure){
-                    m_BoardPositions[posX + posY*boardWidth] = figure.get();
-                    m_Figures.push_back(std::move(figure));
-                }
+                GameFigure figure = GameFigureFactory(figure_Type, pieceColor, piecePosition);
+
+                m_Figures.push_back(std::move(figure));
+                m_BoardPositions[posX + posY*boardWidth] = &m_Figures.back();
             }
         }
     }

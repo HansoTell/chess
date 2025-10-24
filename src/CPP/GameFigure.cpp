@@ -3,13 +3,14 @@
 
 namespace chess{
 
-    GameFigure::GameFigure(Color color, char figureChar, Position& pos): m_Color(color), m_FigureChar(figureChar), m_Position(pos){}
-    Pawn::Pawn(Color color, Position& pos) : GameFigure(color, 'P', pos){}
-    Rook::Rook(Color color, Position& pos) : GameFigure(color, 'R', pos){}
-    Bishop::Bishop(Color color, Position& pos) : GameFigure(color, 'B', pos){}
-    Horse::Horse(Color color, Position& pos) : GameFigure(color, 'K', pos){}
-    Queen::Queen(Color color, Position& pos) : GameFigure(color, 'Q', pos){}
-    King::King(Color color, Position& pos) : GameFigure(color, 'K', pos){}
+    GameFigure::GameFigure(Color color, char figureChar, Position& pos, std::unique_ptr<MovementLogic> MovementLogic): m_Color(color), m_FigureChar(figureChar), m_Position(pos), m_MovmentLogic(std::move(MovementLogic)){}
+    GameFigure::GameFigure(const GameFigure& other) : m_Color(other.m_Color), m_Position(other.m_Position), m_FigureChar(other.m_FigureChar), m_MovmentLogic(other.m_MovmentLogic ? other.m_MovmentLogic->clone() : nullptr){}
+    GameFigure::GameFigure(GameFigure&& other) : m_Color(other.m_Color), m_Position(other.m_Position), m_FigureChar(other.m_FigureChar), m_MovmentLogic(std::move(other.m_MovmentLogic)){
+        other.m_Color = WHITE;
+        other.m_Position.x = 0;
+        other.m_Position.y = 0;
+        other.m_FigureChar = 'F';
+    }
 
     void GameFigure::printColor() const{
         if(m_Color == Color::WHITE){
@@ -22,66 +23,18 @@ namespace chess{
         printColor();
         std::cout <<m_FigureChar;
     }
-    bool GameFigure::isMoveLegal(const Move& Move, const BoardView& BoardView) const {
-        if(isAllowedDirection(Move) && isPathClear(Move, BoardView))
-            return true;
-
-        return false;
-    }
 
 
-    bool Rook::isAllowedDirection(const Move& Move) const {
-        int x_OffSet = Move.m_OffSetPosition.x;
-        int y_OffSet = Move.m_OffSetPosition.y;
-        if((x_OffSet && !y_OffSet) || (!x_OffSet && y_OffSet))
-            return true;
-
-        return false;        
-    }
-    bool Rook::isPathClear(const Move& Move, const BoardView& BoardView) const {
-        int stepX = (Move.m_OffSetPosition.x == 0) ? 0 : (Move.m_OffSetPosition.x > 0 ? 1 : -1);
-        int stepY = (Move.m_OffSetPosition.y == 0) ? 0 : (Move.m_OffSetPosition.y > 0 ? 1 : -1);
-
-        int x = Move.m_PiecePosition.x + stepX;
-        int y = Move.m_PiecePosition.y + stepY;
-
-        while(x != Move.m_DesiredPosition.x || y != Move.m_DesiredPosition.y){
-            if(BoardView.getFigureAt({ x, y}))
-                return false;
-            x+=stepX;
-            y+=stepY;
-        }
-
-        return true;
-    }
-
-    bool Pawn::isAllowedDirection(const Move& Move) const {}
-    bool Pawn::isPathClear(const Move& Move, const BoardView& BoardView) const {}
-
-    bool Bishop::isAllowedDirection(const Move& Move) const {}
-    bool Bishop::isPathClear(const Move& Move, const BoardView& BoardView) const {}
-
-    bool Horse::isAllowedDirection(const Move& Move) const {}
-    bool Horse::isPathClear(const Move& Move, const BoardView& BoardView) const {}
-
-    bool Queen::isAllowedDirection(const Move& Move) const {}
-    bool Queen::isPathClear(const Move& Move, const BoardView& BoardView) const {}
-
-    bool King::isAllowedDirection(const Move& Move) const {}
-    bool King::isPathClear(const Move& Move, const BoardView& BoardView) const {}
-
-
-
-    std::unique_ptr<GameFigure> GameFigureFactory(const std::string& type, Color Color, Position& pos){
-        if(type == "PAWN") return std::make_unique<Pawn>(Color, pos);
-        else if(type=="ROOK") return std::make_unique<Rook>(Color, pos);
-        else if(type=="BISHOP") return std::make_unique<Bishop>(Color, pos);
-        else if(type=="HORSE") return std::make_unique<Horse>(Color, pos);
-        else if(type=="QUEEN") return std::make_unique<Queen> (Color, pos);
-        else if(type=="KING") return std::make_unique<King>(Color, pos);
+    GameFigure GameFigureFactory(const std::string& type, Color Color, Position& pos){
+        if(type == "PAWN") return GameFigure(Color, 'P', pos, std::make_unique<PawnMovment>());
+        else if(type=="ROOK") return GameFigure(Color, 'R', pos, std::make_unique<RookMovment>());
+        else if(type=="BISHOP") return GameFigure(Color, 'B', pos, std::make_unique<BishopMovment>());
+        else if(type=="HORSE") return GameFigure(Color, 'H', pos, std::make_unique<KnightMovment>());
+        else if(type=="QUEEN") return GameFigure(Color, 'Q', pos, std::make_unique<QueenMovment>());
+        else if(type=="KING") return GameFigure(Color, 'K', pos, std::make_unique<KingMovment>());
         else{
             std::cout << "Kein Valide Figur eingegeben im json dokument" << "\n";
-            return nullptr;
+            return GameFigure(Color, 'F', pos, std::make_unique<RookMovment>());
         }
     }
 }

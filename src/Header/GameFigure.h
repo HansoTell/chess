@@ -2,6 +2,7 @@
 #include "Move.h"
 #include "Color.h"
 #include "BoardView.h"
+#include "MovementLogic.h"
 #include <string>
 #include <memory>
 #include <iostream>
@@ -9,82 +10,24 @@
 namespace chess{
     class GameFigure
     {
-    protected:
+    private:
         Color m_Color;
         char m_FigureChar;   
         Position m_Position;
+        std::unique_ptr<MovementLogic> m_MovmentLogic;
+
     public:
-        GameFigure(Color Color, char figureChar, Position& pos);
-        virtual ~GameFigure() = default;
-        virtual bool isMoveLegal(const Move& move, const BoardView& boardView) const;
-        virtual void printChar() const ;
-    protected:
-        virtual void printColor() const;
-        virtual bool isAllowedDirection(const Move& Move) const = 0;
-        virtual bool isPathClear( const Move& Move, const BoardView& BoardView) const = 0;
-    };
-
-
-    class Pawn : public GameFigure{
-    private: 
-
-        virtual bool isAllowedDirection(const Move& Move) const override;
-        virtual bool isPathClear(const Move& Move, const BoardView& BoardView) const override;
-    public:
-        Pawn(Color color, Position& pos);
-    };
-
-    class Rook : public GameFigure
-    {
+        GameFigure(Color Color, char figureChar, Position& pos, std::unique_ptr<MovementLogic> MovmentLogic);
+        GameFigure(const GameFigure& other);
+        GameFigure(GameFigure&& other);
+        ~GameFigure() = default;
+        GameFigure& operator=(GameFigure&& other) = default;
+        bool isMoveLegal(const Move& move, const BoardView& boardView) const { return m_MovmentLogic->isMoveLegal(move, boardView); }
+        void printChar() const;
     private:
-
-        virtual bool isAllowedDirection( const Move& Move) const override;
-        virtual bool isPathClear(const Move& Move, const BoardView& BoardView) const override;
-    public:
-        Rook(Color color, Position& pos);
-    };
-
-    
-    class Bishop : public GameFigure
-    {
-    private:
-        virtual bool isAllowedDirection(const Move& Move) const override;
-        virtual bool isPathClear(const Move& Move,const BoardView& BoardView) const override;
-    public:
-        Bishop(Color color, Position& pos);
-    };
-
-    
-    class Horse : public GameFigure
-    {
-    private:
-        virtual bool isAllowedDirection(const Move& Move) const override;
-        virtual bool isPathClear(const Move& Move,const BoardView& BoardView) const override;
-    public:
-        Horse(Color color, Position& pos);
+        void printColor() const;
     };
 
 
-    class Queen : public GameFigure
-    {
-    private:
-        virtual bool isAllowedDirection(const Move& Move) const override;
-        virtual bool isPathClear(const Move& Move,const BoardView& BoardView) const override;
-    public:
-        Queen(Color color, Position& pos);
-    };
-
-
-    class King : public GameFigure
-    {
-    private:
-        virtual bool isAllowedDirection(const Move& Move) const override;
-        virtual bool isPathClear(const Move& Move,const BoardView& BoardView) const override;
-    public:
-        King(Color color, Position& pos);
-    };
-
-
-
-    std::unique_ptr<GameFigure> GameFigureFactory(const std::string& type, Color color, Position& pos);
+    GameFigure GameFigureFactory(const std::string& type, Color color, Position& pos);
 }

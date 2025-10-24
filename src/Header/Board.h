@@ -18,7 +18,7 @@ namespace chess
     {
     private:
         std::array<GameFigure*, boardSize> m_BoardPositions;
-        std::vector<std::unique_ptr<GameFigure>> m_Figures;
+        std::vector<GameFigure> m_Figures;
         const BoardView m_BoardView;
     public:
 
