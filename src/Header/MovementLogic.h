@@ -1,6 +1,7 @@
 #pragma once
 #include "Move.h"
 #include "BoardView.h"
+#include <math.h>
 #include <memory>
 
 namespace chess{
@@ -37,6 +38,9 @@ namespace chess{
     public:
         bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override; 
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<BishopMovment>(*this); }
+    private:
+        bool isAllowedDirection(const Move& Move) const;
+        bool isPathClear(const Move& Move, const BoardView& BoardView) const;
     };
 
     class KnightMovment : public MovementLogic{

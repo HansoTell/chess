@@ -36,7 +36,27 @@ namespace chess{
     }
 
     bool KnightMovment::isMoveLegal(const Move& Move, const BoardView& BoardView) const {}
-    bool BishopMovment::isMoveLegal(const Move& Move, const BoardView& BoardView) const {}
+
+    bool BishopMovment::isMoveLegal(const Move& Move, const BoardView& BoardView) const {
+        if(isAllowedDirection(Move) && isPathClear(Move, BoardView))
+            return true;
+
+        return false;
+    }
+    bool BishopMovment::isAllowedDirection(const Move& Move) const {
+        if((Move.m_OffSetPosition.x && Move.m_OffSetPosition.y) && (abs(Move.m_OffSetPosition.x)== abs(Move.m_OffSetPosition.y)))
+            return true;
+        return false;
+    }
+    bool BishopMovment::isPathClear(const Move& Move, const BoardView& BoardView) const {
+        int stepX = (Move.m_OffSetPosition.x > 0) ? 1 : -1;
+        int stepY = (Move.m_OffSetPosition.y > 0) ? 1 : -1;
+
+        int x = Move.m_PiecePosition.x + stepX;
+        int y = Move.m_PiecePosition.y + stepY;
+        
+    }
+
     bool PawnMovment::isMoveLegal(const Move& Move, const BoardView& BoardView) const {}
 
 }
