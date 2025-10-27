@@ -9,13 +9,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Ausgabeverzeichnis für die Executable
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# vcpkg Toolchain
-set(CMAKE_TOOLCHAIN_FILE "$ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
-
 # Include-Pfade für deine Header-Dateien
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/Header
-    $ENV{HOME}/vcpkg/installed/x64-linux/include
+    ${PROJECT_SOURCE_DIR}/include
 )
 
 # Executable mit allen CPP-Dateien
