@@ -81,36 +81,48 @@ namespace chess{
         return MovementTypes::isPathClear(Move, BoardView, stepX, stepY);
     }
 
-    bool PawnMovement::isMoveLegal(const Move& Move, const BoardView& BoardView) const {
+    bool PawnMovement::isMoveLegal(const Move& move, const BoardView& BoardView) const {
         //hat sich nicht in y richtung bewegt
-        if(Move.m_OffSetPosition.y)
+        if(move.m_OffSetPosition.y)
             return false;
 
-        if((Move.m_PlayerColor == WHITE) && (Move.m_OffSetPosition.y < 0))
+        if((move.m_PlayerColor == WHITE) && (move.m_OffSetPosition.y < 0))
             return false;
 
-        if((Move.m_PlayerColor == BLACK) && (Move.m_OffSetPosition.y > 0))
+        if((move.m_PlayerColor == BLACK) && (move.m_OffSetPosition.y > 0))
+            return false;
+        if(abs(move.m_OffSetPosition.y) > 2)
             return false;
         
-        if(MovementTypes::isStraigt(Move)){
+        if(MovementTypes::isStraigt(move)){
             
             //kann er 2 schritte gehen
-            int startPosition = (Move.m_PlayerColor == WHITE) ? 1 : 7;
-            if(startPosition == Move.m_PiecePosition.y){
+            bool firstMove = false;
+            int startPosition = (move.m_PlayerColor == WHITE) ? 1 : 7;
+            if(abs(move.m_OffSetPosition.y == 2) && (startPosition != move.m_PiecePosition.y))
+               return false;
+            
 
-            }
+            int stepX = 0;
+            int stepY = (move.m_PlayerColor == WHITE) ? 1 : -1;
+            Move moveCopy = move;
+            moveCopy.m_DesiredPosition.y += stepY;
+            if(!MovementTypes::isPathClear(moveCopy, BoardView, stepX, stepY))
+                return false;
+
+            return true;            
 
 
-        }else if(MovementTypes::isDiagonal(Move)){
-            if(!MovementTypes::isKingMovement(Move))
+        }else if(MovementTypes::isDiagonal(move)){
+            if(!MovementTypes::isKingMovement(move))
                 return false;
             
-            if(!BoardView.getFigureAt(Move.m_DesiredPosition))
+            if(!BoardView.getFigureAt(move.m_DesiredPosition))
                 return false;
             
             return true;
                 
-        }else if(MovementTypes::isEnPassant(Move)){
+        }else if(MovementTypes::isEnPassant(move)){
             
         }else{
             return false;
