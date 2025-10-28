@@ -9,49 +9,59 @@ namespace chess{
     class MovementLogic{
     public:
         virtual ~MovementLogic() = default;
-        virtual bool isMoveLegal(const Move& Move, const BoardView& BoardView) const = 0; 
+        virtual bool isMoveLegal(const Move& Move, const BoardView& BoardView) const; 
         virtual std::unique_ptr<MovementLogic> clone() const = 0;
+    protected:
+        virtual bool isAllowedDirection(const Move& Move) const = 0;
+        virtual bool isPathClear(const Move& Move, const BoardView& BoardView) const = 0;
     };
 
-    class KingMovment : public MovementLogic{
+    class KingMovement : public MovementLogic{
     public:
-        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override; 
-        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<KingMovment>(*this); }
+        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<KingMovement>(*this); }
+    protected:
+        bool isAllowedDirection(const Move& Move) const override;
+        bool isPathClear(const Move& Move, const BoardView& BoardView) const override { return true; }
     };
 
-    class QueenMovment : public MovementLogic{
+    class QueenMovement : public MovementLogic{
     public:
-        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override; 
-        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<QueenMovment>(*this); }
+        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<QueenMovement>(*this); }
+    protected:
+        bool isAllowedDirection(const Move& Move) const override;
+        bool isPathClear(const Move& Move, const BoardView& BoardView) const override;
     };
 
-    class RookMovment : public MovementLogic{
+    class RookMovement : public MovementLogic{
     public:
-        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override; 
-        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<RookMovment>(*this); }
-    private:
-        bool isAllowedDirection(const Move& Move) const;
-        bool isPathClear(const Move& Move, const BoardView& BoardView) const;
+        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<RookMovement>(*this); }
+    protected:
+        bool isAllowedDirection(const Move& Move) const override;
+        bool isPathClear(const Move& Move, const BoardView& BoardView) const override;
     };
 
-    class BishopMovment : public MovementLogic{
+    class BishopMovement : public MovementLogic{
     public:
-        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override; 
-        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<BishopMovment>(*this); }
-    private:
-        bool isAllowedDirection(const Move& Move) const;
-        bool isPathClear(const Move& Move, const BoardView& BoardView) const;
+        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<BishopMovement>(*this); }
+    protected:
+        bool isAllowedDirection(const Move& Move) const override;
+        bool isPathClear(const Move& Move, const BoardView& BoardView) const override;
     };
 
-    class KnightMovment : public MovementLogic{
+    class KnightMovement : public MovementLogic{
     public:
-        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override; 
-        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<KnightMovment>(*this); }
+        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<KnightMovement>(*this); }
+    protected:
+        bool isAllowedDirection(const Move& Move) const override;
+        bool isPathClear(const Move& Move, const BoardView& BoardView) const override { return true; }
     };
 
-    class PawnMovment : public MovementLogic{
+    class PawnMovement : public MovementLogic{
     public:
-        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override; 
-        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<PawnMovment>(*this); }
+        std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<PawnMovement>(*this); }
+        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override;
+    protected:
+        bool isAllowedDirection(const Move& Move) const override;
+        bool isPathClear(const Move& Move, const BoardView& BoardView) const override;
     };
 }
