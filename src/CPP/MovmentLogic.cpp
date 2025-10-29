@@ -1,5 +1,6 @@
 #include "MovementLogic.h"
 
+//Casteling is missing
 namespace chess{
 
     namespace MovementTypes{
@@ -28,8 +29,13 @@ namespace chess{
                 return true;
             return false; 
         }
-        static bool isEnPassant(const Move& Move){
+        static bool isEnPassant(const Move& move, const BoardView& BoardView){
+            const Position isEnPassantPawnPos(move.m_DesiredPosition.x, move.m_DesiredPosition.y -1);
+            int EnPassantRow = (move.m_PlayerColor == WHITE) ? 4 : 3;
 
+           return BoardView.getFigureAt( isEnPassantPawnPos ) && 
+                    BoardView.getFigureAt(isEnPassantPawnPos)->getFigureType() == PAWN &&
+                        EnPassantRow == move.m_PiecePosition.y; 
         }
         static bool isPathClear(const Move& Move, const BoardView& BoardView, int stepX, int stepY){
             int x = Move.m_PiecePosition.x + stepX;
@@ -46,12 +52,8 @@ namespace chess{
         }
     }
 
-    bool MovementLogic::isMoveLegal(const Move& Move, const BoardView& BoardView) const{
-        if(isAllowedDirection(Move) && isPathClear(Move, BoardView))
-            return true;
 
-        return false;
-    }
+    bool MovementLogic::isMoveLegal(const Move& Move, const BoardView& BoardView) const{ return (isAllowedDirection(Move) && isPathClear(Move, BoardView)); }
 
     bool RookMovement::isAllowedDirection(const Move& Move) const{ return MovementTypes::isStraigt(Move); } 
     bool RookMovement::isPathClear(const Move& Move, const BoardView& BoardView) const{
@@ -81,9 +83,9 @@ namespace chess{
         return MovementTypes::isPathClear(Move, BoardView, stepX, stepY);
     }
 
-    bool PawnMovement::isMoveLegal(const Move& move, const BoardView& BoardView) const {
-        //hat sich nicht in y richtung bewegt
-        if(move.m_OffSetPosition.y)
+    bool PawnMovement::isAllowedDirection(const Move& move) const{
+
+        if(!move.m_OffSetPosition.y)
             return false;
 
         if((move.m_PlayerColor == WHITE) && (move.m_OffSetPosition.y < 0))
@@ -91,60 +93,39 @@ namespace chess{
 
         if((move.m_PlayerColor == BLACK) && (move.m_OffSetPosition.y > 0))
             return false;
-        if(abs(move.m_OffSetPosition.y) > 2)
-            return false;
-        
-        if(MovementTypes::isStraigt(move)){
-            
-            //kann er 2 schritte gehen
-            bool firstMove = false;
+
+
+        if(MovementTypes::isStraigt(move) && abs(move.m_OffSetPosition.y) <= 2){
             int startPosition = (move.m_PlayerColor == WHITE) ? 1 : 7;
             if(abs(move.m_OffSetPosition.y == 2) && (startPosition != move.m_PiecePosition.y))
                return false;
             
+            return true;
+        }
+        
+        if(MovementTypes::isDiagonal(move) && abs(move.m_OffSetPosition.y == 1))
+            return true;
+        
+        return false;
+    }
 
+    bool PawnMovement::isPathClear(const Move& move, const BoardView& BoardView) const {
+        if(MovementTypes::isStraigt(move)){
             int stepX = 0;
             int stepY = (move.m_PlayerColor == WHITE) ? 1 : -1;
             Move moveCopy = move;
             moveCopy.m_DesiredPosition.y += stepY;
-            if(!MovementTypes::isPathClear(moveCopy, BoardView, stepX, stepY))
-                return false;
 
-            return true;            
-
-
-        }else if(MovementTypes::isDiagonal(move)){
-            if(!MovementTypes::isKingMovement(move))
-                return false;
-            
-            if(!BoardView.getFigureAt(move.m_DesiredPosition))
-                return false;
-            
-            return true;
-                
-        }else if(MovementTypes::isEnPassant(move)){
-            
-        }else{
-            return false;
+            return MovementTypes::isPathClear(moveCopy, BoardView, stepX, stepY);
         }
-    }
-    bool PawnMovement::isAllowedDirection(const Move& Move) const{
-        //anfangs doppel step --> sonst länge checken
-        //enpassant
-        //path clear, aber so dass letzte gechekt wird, wenn gerade aus geht
 
-
-        //--> wissen die figur geht in die richtige richtung
-        //--> diagonal sollte er richtig bestimmen können
-
-
-        int direction = (Move.m_PlayerColor == WHITE) ? 1 : -1;
-        int startPosition = (Move.m_PlayerColor == WHITE) ? 1 : 7;
-
+        if(isDiagonalPathClear(move, BoardView))
+            return true;
         
-    }
+        if(MovementTypes::isEnPassant(move, BoardView))
+            return true;
+         
 
-    bool PawnMovement::isPathClear(const Move& Move, const BoardView& BoardView) const {
-
+        return false;
     }
 }

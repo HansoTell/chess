@@ -1,6 +1,8 @@
 #pragma once
 #include "Move.h"
 #include "BoardView.h"
+#include "FigureTypes.h"
+#include "GameFigure.h"
 #include <math.h>
 #include <memory>
 
@@ -9,7 +11,7 @@ namespace chess{
     class MovementLogic{
     public:
         virtual ~MovementLogic() = default;
-        virtual bool isMoveLegal(const Move& Move, const BoardView& BoardView) const; 
+        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const; 
         virtual std::unique_ptr<MovementLogic> clone() const = 0;
     protected:
         virtual bool isAllowedDirection(const Move& Move) const = 0;
@@ -59,9 +61,9 @@ namespace chess{
     class PawnMovement : public MovementLogic{
     public:
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<PawnMovement>(*this); }
-        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override;
     protected:
         bool isAllowedDirection(const Move& Move) const override;
         bool isPathClear(const Move& Move, const BoardView& BoardView) const override;
+        bool isDiagonalPathClear(const Move& move, const BoardView& BoardView) const { return BoardView.getFigureAt(move.m_DesiredPosition); }
     };
 }

@@ -85,6 +85,7 @@ namespace chess{
     bool Board::isMoveLegal(const Move& move) const{
         //checken ob Move out of bounds
         //checken dass move nicht stehend:
+        //casteling total vergessem
 
         if(!m_BoardPositions[move.m_PiecePosition.index()]->isMoveLegal(move, m_BoardView)) 
             return false;
