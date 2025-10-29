@@ -20,6 +20,7 @@ namespace chess{
 
     class KingMovement : public MovementLogic{
     public:
+        bool wasInCheck = false;
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<KingMovement>(*this); }
     protected:
         bool isAllowedDirection(const Move& Move) const override;

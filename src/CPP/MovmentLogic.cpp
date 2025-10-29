@@ -37,6 +37,9 @@ namespace chess{
                     BoardView.getFigureAt(isEnPassantPawnPos)->getFigureType() == PAWN &&
                         EnPassantRow == move.m_PiecePosition.y; 
         }
+        static bool isCastle(const Move& move){
+            
+        }
         static bool isPathClear(const Move& Move, const BoardView& BoardView, int stepX, int stepY){
             int x = Move.m_PiecePosition.x + stepX;
             int y = Move.m_PiecePosition.y + stepY;
@@ -73,7 +76,17 @@ namespace chess{
 
     bool KnightMovement::isAllowedDirection(const Move& Move) const { return MovementTypes::isKnightMovement(Move); }
 
-    bool KingMovement::isAllowedDirection(const Move& Move) const { return MovementTypes::isKingMovement(Move); }
+    bool KingMovement::isAllowedDirection(const Move& Move) const { 
+        if(MovementTypes::isKingMovement(Move))
+            return true;
+
+        if(!wasInCheck && MovementTypes::isCastle(Move))
+            return true;
+        
+
+        return false; 
+    }
+
     
     bool QueenMovement::isAllowedDirection(const Move& Move) const { return (MovementTypes::isStraigt(Move) || MovementTypes::isDiagonal(Move)); }
     bool QueenMovement::isPathClear(const Move& Move, const BoardView& BoardView) const {
