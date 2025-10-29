@@ -56,8 +56,13 @@ namespace chess{
     }
 
 
-    bool MovementLogic::isMoveLegal(const Move& Move, const BoardView& BoardView) const{ return (isAllowedDirection(Move) && isPathClear(Move, BoardView)); }
-
+    bool RookMovement::isMoveLegal(const Move& Move, const BoardView& BoardView) const {
+        if(MovementLogic::isMoveLegal(Move, BoardView)){
+            m_HasMoved = true;
+            return true;
+        }
+        return false;
+    }
     bool RookMovement::isAllowedDirection(const Move& Move) const{ return MovementTypes::isStraigt(Move); } 
     bool RookMovement::isPathClear(const Move& Move, const BoardView& BoardView) const{
         int stepX = (Move.m_OffSetPosition.x == 0) ? 0 : (Move.m_OffSetPosition.x > 0 ? 1 : -1);
@@ -76,11 +81,18 @@ namespace chess{
 
     bool KnightMovement::isAllowedDirection(const Move& Move) const { return MovementTypes::isKnightMovement(Move); }
 
+    bool KingMovement::isMoveLegal(const Move& Move, const BoardView& BoardView) const {
+        if(MovementLogic::isMoveLegal(Move, BoardView)){
+            m_HasMoved = true;
+            return true;
+        }
+        return false;
+    }
     bool KingMovement::isAllowedDirection(const Move& Move) const { 
         if(MovementTypes::isKingMovement(Move))
             return true;
 
-        if(!wasInCheck && MovementTypes::isCastle(Move))
+        if(!m_HasMoved && MovementTypes::isCastle(Move))
             return true;
         
 

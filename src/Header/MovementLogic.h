@@ -11,7 +11,8 @@ namespace chess{
     class MovementLogic{
     public:
         virtual ~MovementLogic() = default;
-        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const; 
+        virtual bool isMoveLegal(const Move& Move, const BoardView& BoardView) const { return (isAllowedDirection(Move) && isPathClear(Move, BoardView)); }
+ 
         virtual std::unique_ptr<MovementLogic> clone() const = 0;
     protected:
         virtual bool isAllowedDirection(const Move& Move) const = 0;
@@ -20,8 +21,9 @@ namespace chess{
 
     class KingMovement : public MovementLogic{
     public:
-        bool wasInCheck = false;
+        mutable bool m_HasMoved = false;
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<KingMovement>(*this); }
+        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override;
     protected:
         bool isAllowedDirection(const Move& Move) const override;
         bool isPathClear(const Move& Move, const BoardView& BoardView) const override { return true; }
@@ -37,6 +39,8 @@ namespace chess{
 
     class RookMovement : public MovementLogic{
     public:
+        mutable bool m_HasMoved = false;
+        bool isMoveLegal(const Move& Move, const BoardView& BoardView) const override;
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<RookMovement>(*this); }
     protected:
         bool isAllowedDirection(const Move& Move) const override;
