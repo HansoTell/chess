@@ -10,6 +10,7 @@
 #include "Constants.h"
 #include "Color.h"
 #include "BoardView.h"
+#include "GameState.h"
 
 using json = nlohmann::json;
 namespace chess
@@ -20,6 +21,7 @@ namespace chess
         std::array<GameFigure*, boardSize> m_BoardPositions;
         std::vector<GameFigure> m_Figures;
         const BoardView m_BoardView;
+        const GameState m_GameState;
     public:
 
         Board(const std::string& filename);

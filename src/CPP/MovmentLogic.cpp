@@ -1,31 +1,32 @@
 #include "MovementLogic.h"
+#include "GameFigure.h"
 
 //Casteling is missing
 namespace chess{
 
     namespace MovementTypes{
         static bool isStraigt(const Move& Move){
-            int x_OffSet = Move.m_OffSetPosition.x;
-            int y_OffSet = Move.m_OffSetPosition.y;
+            int x_OffSet = Move.getXOffSet();
+            int y_OffSet = Move.getYOffSet();
             if((x_OffSet && !y_OffSet) || (!x_OffSet && y_OffSet))
                 return true;
 
             return false;       
         }
         static bool isDiagonal(const Move& Move){
-            if(abs(Move.m_OffSetPosition.x)== abs(Move.m_OffSetPosition.y))
+            if(abs(Move.getXOffSet())== abs(Move.getYOffSet()))
                 return true;
             return false;
         }
         static bool isKnightMovement(const Move& Move){
-            int abs_DealtaX = abs(Move.m_OffSetPosition.x);
-            int abs_DealtaY = abs(Move.m_OffSetPosition.y);
+            int abs_DealtaX = abs(Move.getXOffSet());
+            int abs_DealtaY = abs(Move.getYOffSet());
             if((abs_DealtaX == 1 && abs_DealtaY == 2) || (abs_DealtaX == 2 && abs_DealtaY == 1))
                 return true;    
             return false;
         }
         static bool isKingMovement(const Move& Move){
-            if((abs(Move.m_OffSetPosition.x) <= 1) && (abs(Move.m_OffSetPosition.y <= 1)))
+            if((abs(Move.getXOffSet()) <= 1) && (abs(Move.getYOffSet() <= 1)))
                 return true;
             return false; 
         }
@@ -36,9 +37,6 @@ namespace chess{
            return BoardView.getFigureAt( isEnPassantPawnPos ) && 
                     BoardView.getFigureAt(isEnPassantPawnPos)->getFigureType() == PAWN &&
                         EnPassantRow == move.m_PiecePosition.y; 
-        }
-        static bool isCastle(const Move& move){
-            
         }
         static bool isPathClear(const Move& Move, const BoardView& BoardView, int stepX, int stepY){
             int x = Move.m_PiecePosition.x + stepX;
@@ -53,89 +51,116 @@ namespace chess{
 
             return true;
         }
-    }
+        static bool isCastle(const Move& move, const BoardView& BoardView, GameState GameState){
+            if(move.getYOffSet() !=0 || abs(move.getXOffSet()) != 2)
+                return false;
 
 
-    bool RookMovement::isMoveLegal(const Move& Move, const BoardView& BoardView) const {
-        if(MovementLogic::isMoveLegal(Move, BoardView)){
-            m_HasMoved = true;
+            bool isShortCastle = move.getXOffSet() < 0;
+            int stepX = (isShortCastle) ? 1 : -1;
+            int stepY = 0;
+            Move moveCopy = move;
+            
+            moveCopy.m_DesiredPosition = isShortCastle ?  Position(move.m_DesiredPosition.x + 1, move.m_DesiredPosition.y) : Position(move.m_DesiredPosition.x - 2, move.m_DesiredPosition.y);
+            if(!isPathClear(move, BoardView, stepX, stepY))
+               return false;
+
+            if(move.m_PlayerColor == WHITE ){
+                if(isShortCastle == 1 && (GameState.m_HasWhiteKingMoved || GameState.m_HasWhiteHRookMoved || GameState.m_isWhiteKingInCheck))
+                    return false;
+                
+                if(isShortCastle == -1 && (GameState.m_HasWhiteKingMoved || GameState.m_HasWhiteARookMoved))
+                    return false;
+            }
+            
+            if(move.m_PlayerColor == BLACK && (GameState.m_HasBlackKingMoved || GameState.m_HasBlackARookMoved || GameState.m_HasBlackHRookMoved || GameState.m_isBlackKingInCheck)){
+                return false;
+                if(isShortCastle == 1 && (GameState.m_HasBlackKingMoved || GameState.m_HasBlackHRookMoved))
+                    return false;
+                
+                if(isShortCastle == -1 && (GameState.m_HasBlackKingMoved || GameState.m_HasBlackARookMoved))
+                    return false;
+            }
+            
+
+
+            //einzige bedingun die fehljt sind die bedrohten felder
+            
             return true;
         }
-        return false;
-    }
-    bool RookMovement::isAllowedDirection(const Move& Move) const{ return MovementTypes::isStraigt(Move); } 
-    bool RookMovement::isPathClear(const Move& Move, const BoardView& BoardView) const{
-        int stepX = (Move.m_OffSetPosition.x == 0) ? 0 : (Move.m_OffSetPosition.x > 0 ? 1 : -1);
-        int stepY = (Move.m_OffSetPosition.y == 0) ? 0 : (Move.m_OffSetPosition.y > 0 ? 1 : -1);
-
-        return MovementTypes::isPathClear(Move, BoardView, stepX, stepY);
     }
 
-    bool BishopMovement::isAllowedDirection(const Move& Move) const { return MovementTypes::isDiagonal(Move); }
-    bool BishopMovement::isPathClear(const Move& Move, const BoardView& BoardView) const {
-        int stepX = (Move.m_OffSetPosition.x > 0) ? 1 : -1;
-        int stepY = (Move.m_OffSetPosition.y > 0) ? 1 : -1;
 
-        return MovementTypes::isPathClear(Move, BoardView, stepX, stepY);
-    }
+    bool RookMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const {
+        if(MovementTypes::isStraigt(move)){
 
-    bool KnightMovement::isAllowedDirection(const Move& Move) const { return MovementTypes::isKnightMovement(Move); }
+            int stepX = (move.getXOffSet() == 0) ? 0 : (move.getXOffSet() > 0 ? 1 : -1);
+            int stepY = (move.getYOffSet() == 0) ? 0 : (move.getYOffSet() > 0 ? 1 : -1);
 
-    bool KingMovement::isMoveLegal(const Move& Move, const BoardView& BoardView) const {
-        if(MovementLogic::isMoveLegal(Move, BoardView)){
-            m_HasMoved = true;
-            return true;
+            return MovementTypes::isPathClear(move, BoardView, stepX, stepY);
         }
+
         return false;
     }
-    bool KingMovement::isAllowedDirection(const Move& Move) const { 
-        if(MovementTypes::isKingMovement(Move))
+
+
+    bool BishopMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const {
+        if(MovementTypes::isDiagonal(move)){
+
+            int stepX = (move.getXOffSet() > 0) ? 1 : -1;
+            int stepY = (move.getYOffSet() > 0) ? 1 : -1;
+
+            return MovementTypes::isPathClear(move, BoardView, stepX, stepY);
+        }
+
+        return false;
+    }
+
+    bool KnightMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { return MovementTypes::isKnightMovement(move); }
+
+
+    bool KingMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
+
+        if(MovementTypes::isKingMovement(move))
             return true;
 
-        if(!m_HasMoved && MovementTypes::isCastle(Move))
+        if(MovementTypes::isCastle(move, BoardView, GameState))
             return true;
         
 
         return false; 
     }
 
-    
-    bool QueenMovement::isAllowedDirection(const Move& Move) const { return (MovementTypes::isStraigt(Move) || MovementTypes::isDiagonal(Move)); }
-    bool QueenMovement::isPathClear(const Move& Move, const BoardView& BoardView) const {
-        int stepX = (Move.m_OffSetPosition.x == 0) ? 0 : (Move.m_OffSetPosition.x > 0 ? 1 : -1);
-        int stepY = (Move.m_OffSetPosition.y == 0) ? 0 : (Move.m_OffSetPosition.y > 0 ? 1 : -1);
+    bool QueenMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
+        if(MovementTypes::isStraigt(move) || MovementTypes::isDiagonal(move)){
 
-        return MovementTypes::isPathClear(Move, BoardView, stepX, stepY);
-    }
+            int stepX = (move.getXOffSet() == 0) ? 0 : (move.getXOffSet() > 0 ? 1 : -1);
+            int stepY = (move.getYOffSet() == 0) ? 0 : (move.getYOffSet() > 0 ? 1 : -1);
 
-    bool PawnMovement::isAllowedDirection(const Move& move) const{
-
-        if(!move.m_OffSetPosition.y)
-            return false;
-
-        if((move.m_PlayerColor == WHITE) && (move.m_OffSetPosition.y < 0))
-            return false;
-
-        if((move.m_PlayerColor == BLACK) && (move.m_OffSetPosition.y > 0))
-            return false;
-
-
-        if(MovementTypes::isStraigt(move) && abs(move.m_OffSetPosition.y) <= 2){
-            int startPosition = (move.m_PlayerColor == WHITE) ? 1 : 7;
-            if(abs(move.m_OffSetPosition.y == 2) && (startPosition != move.m_PiecePosition.y))
-               return false;
-            
-            return true;
+            return MovementTypes::isPathClear(move, BoardView, stepX, stepY);
         }
-        
-        if(MovementTypes::isDiagonal(move) && abs(move.m_OffSetPosition.y == 1))
-            return true;
-        
+
         return false;
     }
 
-    bool PawnMovement::isPathClear(const Move& move, const BoardView& BoardView) const {
-        if(MovementTypes::isStraigt(move)){
+    bool PawnMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
+        //verwandlung fehljt noch
+        if(!move.getYOffSet())
+            return false;
+
+        if((move.m_PlayerColor == WHITE) && (move.getYOffSet() < 0))
+            return false;
+
+        if((move.m_PlayerColor == BLACK) && (move.getYOffSet() > 0))
+            return false;
+
+
+        if(MovementTypes::isStraigt(move) && abs(move.getYOffSet()) <= 2){
+            int startPosition = (move.m_PlayerColor == WHITE) ? 1 : 7;
+            if(abs(move.getYOffSet() == 2) && (startPosition != move.m_PiecePosition.y))
+               return false;
+            
+            
             int stepX = 0;
             int stepY = (move.m_PlayerColor == WHITE) ? 1 : -1;
             Move moveCopy = move;
@@ -143,13 +168,12 @@ namespace chess{
 
             return MovementTypes::isPathClear(moveCopy, BoardView, stepX, stepY);
         }
-
-        if(isDiagonalPathClear(move, BoardView))
-            return true;
+        
+        if(MovementTypes::isDiagonal(move) && abs(move.getYOffSet() == 1))
+            return isDiagonalPathClear(move, BoardView);
         
         if(MovementTypes::isEnPassant(move, BoardView))
             return true;
-         
 
         return false;
     }

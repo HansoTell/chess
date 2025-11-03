@@ -4,11 +4,14 @@
 #include "BoardView.h"
 #include "MovementLogic.h"
 #include "FigureTypes.h"
+#include "GameState.h"
 #include <string>
 #include <memory>
 #include <iostream>
 
 namespace chess{
+
+
     class GameFigure
     {
     private:
@@ -25,7 +28,7 @@ namespace chess{
         ~GameFigure() = default;
         GameFigure& operator=(GameFigure&& other) = default;
     public:
-        bool isMoveLegal(const Move& move, const BoardView& boardView) const { return m_MovmentLogic->isMoveLegal(move, boardView); }
+        bool isMoveLegal(const Move& move, const BoardView& boardView, GameState GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
         void printChar() const;
         FigureType getFigureType() const { return m_FigureType; }
     private:

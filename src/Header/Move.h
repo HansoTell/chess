@@ -10,16 +10,19 @@ namespace chess{
         Position(int x, int y) : x(x), y(y){}
         Position(const Position& other) = default;
         Position(Position&& other);
+        Position& operator=(const Position& other) = default;
         int index() const { return x + y * boardWidth; }
     };
 
     struct Move{
-        Position m_PiecePosition, m_DesiredPosition, m_OffSetPosition;
+        Position m_PiecePosition, m_DesiredPosition;
         Color m_PlayerColor;
         MoveType m_MoveType;
         Move(Position piecePosition, Position desiredPosition, Color playerColor) : 
-            m_PiecePosition(piecePosition), m_DesiredPosition(desiredPosition), m_PlayerColor(playerColor), 
-                m_OffSetPosition(m_DesiredPosition.x - m_PiecePosition.x, m_DesiredPosition.y - m_PiecePosition.y), m_MoveType(NORMAL){}
+            m_PiecePosition(piecePosition), m_DesiredPosition(desiredPosition), m_PlayerColor(playerColor), m_MoveType(NORMAL){}
         Move(const Move& other) = default;
+
+        int getXOffSet() const { return m_DesiredPosition.x - m_PiecePosition.x; }
+        int getYOffSet() const { return m_DesiredPosition.y - m_DesiredPosition.y; }
     };
 }

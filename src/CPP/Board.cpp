@@ -67,7 +67,6 @@ namespace chess{
 
 
     bool Board::makeMove(const Move& move){
-
         if(!isMoveLegal(move)){
             return false;
         }
@@ -76,20 +75,21 @@ namespace chess{
 
         //brauchen check ob figur verwandelt werden kann(bauer auf 8tem rang)
 
+        return false;
     }
 
     void Board::executeMove(const Move& Move){
-
+        
     }
 
     bool Board::isMoveLegal(const Move& move) const{
         //checken ob Move out of bounds
         //checken dass move nicht stehend:
-        //casteling total vergessem
 
-        if(!m_BoardPositions[move.m_PiecePosition.index()]->isMoveLegal(move, m_BoardView)) 
+        if(!m_BoardPositions[move.m_PiecePosition.index()]->isMoveLegal(move, m_BoardView, m_GameState)) 
             return false;
 
-        //Brauchen check ob nach dem zug spiel ungütiger zustand ist, wie der eigene könig ist im schach
+        //Brauchen check ob eigener oder anderer könig im schach ist sollte eigener im schach sein falscher zug, sollte anderer im schach sein --> gamestate hscach auf true setzten
+        return false;
     }
 }
