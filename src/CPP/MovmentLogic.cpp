@@ -1,7 +1,7 @@
 #include "MovementLogic.h"
 #include "GameFigure.h"
 
-//Casteling is missing
+
 namespace chess{
 
     namespace MovementTypes{
@@ -62,25 +62,15 @@ namespace chess{
             Move moveCopy = move;
             
             moveCopy.m_DesiredPosition = isShortCastle ?  Position(move.m_DesiredPosition.x + 1, move.m_DesiredPosition.y) : Position(move.m_DesiredPosition.x - 2, move.m_DesiredPosition.y);
-            if(!isPathClear(move, BoardView, stepX, stepY))
+            if(!isPathClear(moveCopy, BoardView, stepX, stepY))
                return false;
 
-            if(move.m_PlayerColor == WHITE ){
-                if(isShortCastle == 1 && (GameState.m_HasWhiteKingMoved || GameState.m_HasWhiteHRookMoved || GameState.m_isWhiteKingInCheck))
-                    return false;
-                
-                if(isShortCastle == -1 && (GameState.m_HasWhiteKingMoved || GameState.m_HasWhiteARookMoved))
-                    return false;
-            }
-            
-            if(move.m_PlayerColor == BLACK && (GameState.m_HasBlackKingMoved || GameState.m_HasBlackARookMoved || GameState.m_HasBlackHRookMoved || GameState.m_isBlackKingInCheck)){
+               
+            if(isShortCastle == 1 && (GameState.hasKingMoved(move.m_PlayerColor) || GameState.hasHRookMoved(move.m_PlayerColor)))
                 return false;
-                if(isShortCastle == 1 && (GameState.m_HasBlackKingMoved || GameState.m_HasBlackHRookMoved))
-                    return false;
-                
-                if(isShortCastle == -1 && (GameState.m_HasBlackKingMoved || GameState.m_HasBlackARookMoved))
-                    return false;
-            }
+            
+            if(isShortCastle == -1 && (GameState.hasKingMoved(move.m_PlayerColor) || GameState.hasARookMoved(move.m_PlayerColor)))
+                return false; 
             
 
 
@@ -103,7 +93,6 @@ namespace chess{
         return false;
     }
 
-
     bool BishopMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const {
         if(MovementTypes::isDiagonal(move)){
 
@@ -117,7 +106,6 @@ namespace chess{
     }
 
     bool KnightMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { return MovementTypes::isKnightMovement(move); }
-
 
     bool KingMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
 

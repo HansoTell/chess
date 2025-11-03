@@ -1,9 +1,12 @@
 #pragma once
 
+#include "Color.h"
+
 namespace chess{
 
-    struct GameState
+    class GameState
     {
+    private:
         bool m_HasWhiteKingMoved = false;
         bool m_isWhiteKingInCheck = false;
         bool m_HasWhiteARookMoved = false; 
@@ -12,5 +15,10 @@ namespace chess{
         bool m_HasBlackHRookMoved = false; 
         bool m_HasBlackKingMoved = false;
         bool m_isBlackKingInCheck = false;
+
+    public:
+        bool hasKingMoved(Color color) const { return (color == WHITE) ? m_HasWhiteKingMoved : m_HasBlackKingMoved; }
+        bool hasHRookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteHRookMoved : m_HasBlackHRookMoved; }
+        bool hasARookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteARookMoved : m_HasBlackARookMoved; }
     };
 }
