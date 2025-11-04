@@ -83,6 +83,7 @@ namespace chess{
     }
 
     bool Board::isMoveLegal(const Move& move) const{
+        //auch noch problem bei kson datei gamestate beim erstellen deafult afu nicht moved was falsch ist wenn rooks weg sind oder so
         //checken ob Move out of bounds
         //checken dass move nicht stehend:
 
