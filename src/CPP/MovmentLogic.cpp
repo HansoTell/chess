@@ -78,60 +78,65 @@ namespace chess{
             
             return true;
         }
+        static bool isPromoting(const Move& move){
+            int promotingRow = (move.m_PlayerColor == WHITE) ? 7 : 0;
+
+            return move.m_DesiredPosition.y == promotingRow;
+        }
     }
 
 
-    bool RookMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const {
+    MoveResult RookMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const {
         if(MovementTypes::isStraigt(move)){
 
             int stepX = (move.getXOffSet() == 0) ? 0 : (move.getXOffSet() > 0 ? 1 : -1);
             int stepY = (move.getYOffSet() == 0) ? 0 : (move.getYOffSet() > 0 ? 1 : -1);
 
-            return MovementTypes::isPathClear(move, BoardView, stepX, stepY);
+            return { MovementTypes::isPathClear(move, BoardView, stepX, stepY), NORMAL };
         }
 
         return false;
     }
 
-    bool BishopMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const {
+    MoveResult BishopMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const {
         if(MovementTypes::isDiagonal(move)){
 
             int stepX = (move.getXOffSet() > 0) ? 1 : -1;
             int stepY = (move.getYOffSet() > 0) ? 1 : -1;
 
-            return MovementTypes::isPathClear(move, BoardView, stepX, stepY);
+            return { MovementTypes::isPathClear(move, BoardView, stepX, stepY), NORMAL };
         }
 
         return false;
     }
 
-    bool KnightMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { return MovementTypes::isKnightMovement(move); }
+    MoveResult KnightMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { return { MovementTypes::isKnightMovement(move), NORMAL }; }
 
-    bool KingMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
+    MoveResult KingMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
 
         if(MovementTypes::isKingMovement(move))
-            return true;
+            return { true, NORMAL };
 
         if(MovementTypes::isCastle(move, BoardView, GameState))
-            return true;
+            return {true, CASTEL};
         
 
         return false; 
     }
 
-    bool QueenMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
+    MoveResult QueenMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
         if(MovementTypes::isStraigt(move) || MovementTypes::isDiagonal(move)){
 
             int stepX = (move.getXOffSet() == 0) ? 0 : (move.getXOffSet() > 0 ? 1 : -1);
             int stepY = (move.getYOffSet() == 0) ? 0 : (move.getYOffSet() > 0 ? 1 : -1);
 
-            return MovementTypes::isPathClear(move, BoardView, stepX, stepY);
+            return { MovementTypes::isPathClear(move, BoardView, stepX, stepY), NORMAL };
         }
 
         return false;
     }
 
-    bool PawnMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
+    MoveResult PawnMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState GameState) const { 
         //verwandlung fehljt noch
         if(!move.getYOffSet())
             return false;
@@ -142,6 +147,8 @@ namespace chess{
         if((move.m_PlayerColor == BLACK) && (move.getYOffSet() > 0))
             return false;
 
+
+        MoveType moveType = (MovementTypes::isPromoting(move)) ? PROMOTING : NORMAL; 
 
         if(MovementTypes::isStraigt(move) && abs(move.getYOffSet()) <= 2){
             int startPosition = (move.m_PlayerColor == WHITE) ? 1 : 7;
@@ -154,14 +161,14 @@ namespace chess{
             Move moveCopy = move;
             moveCopy.m_DesiredPosition.y += stepY;
 
-            return MovementTypes::isPathClear(moveCopy, BoardView, stepX, stepY);
+            return { MovementTypes::isPathClear(moveCopy, BoardView, stepX, stepY), moveType};
         }
         
         if(MovementTypes::isDiagonal(move) && abs(move.getYOffSet() == 1))
-            return isDiagonalPathClear(move, BoardView);
+            return {isDiagonalPathClear(move, BoardView), moveType};
         
         if(MovementTypes::isEnPassant(move, BoardView))
-            return true;
+            return {true, EN_PASSANT };
 
         return false;
     }

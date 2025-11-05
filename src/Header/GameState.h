@@ -1,12 +1,16 @@
 #pragma once
-
+#include <vector>
 #include "Color.h"
+#include "Move.h"
 
 namespace chess{
 
     class GameState
     {
     private:
+        std::vector<Position> m_BlackThreatendSquares;
+        std::vector<Position> m_WhiteThreatendSquares;
+
         bool m_HasWhiteKingMoved = false;
         bool m_isWhiteKingInCheck = false;
         bool m_HasWhiteARookMoved = false; 
@@ -17,6 +21,10 @@ namespace chess{
         bool m_isBlackKingInCheck = false;
 
     public:
+        GameState();
+
+        void updateThreatendSquares();
+        void ThreatendSquaresInit();
         bool hasKingMoved(Color color) const { return (color == WHITE) ? m_HasWhiteKingMoved : m_HasBlackKingMoved; }
         bool hasHRookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteHRookMoved : m_HasBlackHRookMoved; }
         bool hasARookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteARookMoved : m_HasBlackARookMoved; }

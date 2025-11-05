@@ -5,6 +5,7 @@
 #include "MovementLogic.h"
 #include "FigureTypes.h"
 #include "GameState.h"
+#include "MoveResult.h"
 #include <string>
 #include <memory>
 #include <iostream>
@@ -20,6 +21,7 @@ namespace chess{
         Position m_Position;
         std::unique_ptr<MovementLogic> m_MovmentLogic;
         FigureType m_FigureType;
+        std::vector<Position> m_Threats;
 
     public:
         GameFigure(Color Color, char figureChar, Position& pos, std::unique_ptr<MovementLogic> MovmentLogic, FigureType figureType);
@@ -28,7 +30,7 @@ namespace chess{
         ~GameFigure() = default;
         GameFigure& operator=(GameFigure&& other) = default;
     public:
-        bool isMoveLegal(const Move& move, const BoardView& boardView, GameState GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
+        MoveResult isMoveLegal(const Move& move, const BoardView& boardView, GameState GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
         void printChar() const;
         FigureType getFigureType() const { return m_FigureType; }
     private:

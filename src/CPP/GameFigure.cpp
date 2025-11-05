@@ -4,7 +4,9 @@
 namespace chess{
 
     GameFigure::GameFigure(Color color, char figureChar, Position& pos, std::unique_ptr<MovementLogic> MovementLogic, FigureType figureType): 
-        m_Color(color), m_FigureChar(figureChar), m_Position(pos), m_MovmentLogic(std::move(MovementLogic)), m_FigureType(figureType){}
+        m_Color(color), m_FigureChar(figureChar), m_Position(pos), m_MovmentLogic(std::move(MovementLogic)), m_FigureType(figureType){
+            m_Threats.reserve(32*sizeof(Position));
+        }
     GameFigure::GameFigure(const GameFigure& other) : m_Color(other.m_Color), m_Position(other.m_Position), m_FigureChar(other.m_FigureChar), m_MovmentLogic(other.m_MovmentLogic ? other.m_MovmentLogic->clone() : nullptr){}
     GameFigure::GameFigure(GameFigure&& other) : m_Color(other.m_Color), m_Position(other.m_Position), m_FigureChar(other.m_FigureChar), m_MovmentLogic(std::move(other.m_MovmentLogic)){
         other.m_Color = WHITE;

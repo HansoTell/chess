@@ -67,9 +67,14 @@ namespace chess{
 
 
     bool Board::makeMove(const Move& move){
-        if(!isMoveLegal(move)){
+
+        MoveResult moveResult = isMoveLegal(move);
+
+        if(!moveResult.m_IsMoveLegal){
             return false;
         }
+
+        //theoretisch also wenn halt movetype nicht gesetzt ist was mache wir dann? Oder kann das einfach net vorkommen
 
         executeMove(move);
 
@@ -82,15 +87,16 @@ namespace chess{
         
     }
 
-    bool Board::isMoveLegal(const Move& move) const{
+    MoveResult Board::isMoveLegal(const Move& move) const{
+        //überhaupt gucken das in der ausgangsposition auch schön eine figur ist
         //auch noch problem bei kson datei gamestate beim erstellen deafult afu nicht moved was falsch ist wenn rooks weg sind oder so
         //checken ob Move out of bounds
         //checken dass move nicht stehend:
-
-        if(!m_BoardPositions[move.m_PiecePosition.index()]->isMoveLegal(move, m_BoardView, m_GameState)) 
+        MoveResult moveResult = m_BoardPositions[move.m_PiecePosition.index()]->isMoveLegal(move, m_BoardView, m_GameState);
+        if(!moveResult.m_IsMoveLegal) 
             return false;
 
         //Brauchen check ob eigener oder anderer könig im schach ist sollte eigener im schach sein falscher zug, sollte anderer im schach sein --> gamestate hscach auf true setzten
-        return false;
+        return moveResult;
     }
 }

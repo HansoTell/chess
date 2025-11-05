@@ -11,6 +11,7 @@
 #include "Color.h"
 #include "BoardView.h"
 #include "GameState.h"
+#include "MoveResult.h"
 
 using json = nlohmann::json;
 namespace chess
@@ -36,9 +37,10 @@ namespace chess
         void boardinit(const std::string& file);
         json parseJson(const std::string& file);
         void fillBoard(const json& jsonMap);
-        bool isMoveLegal(const Move& move) const;
+        MoveResult isMoveLegal(const Move& move) const;
         bool checkCheck(const Move& move) const;
         void executeMove(const Move& move);
+        std::vector<Position> getThreatendSquares() const;
     };
 }
 

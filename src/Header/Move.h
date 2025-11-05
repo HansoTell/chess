@@ -17,9 +17,8 @@ namespace chess{
     struct Move{
         Position m_PiecePosition, m_DesiredPosition;
         Color m_PlayerColor;
-        MoveType m_MoveType;
         Move(Position piecePosition, Position desiredPosition, Color playerColor) : 
-            m_PiecePosition(piecePosition), m_DesiredPosition(desiredPosition), m_PlayerColor(playerColor), m_MoveType(NORMAL){}
+            m_PiecePosition(piecePosition), m_DesiredPosition(desiredPosition), m_PlayerColor(playerColor){}
         Move(const Move& other) = default;
 
         int getXOffSet() const { return m_DesiredPosition.x - m_PiecePosition.x; }
