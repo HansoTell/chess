@@ -50,7 +50,7 @@ namespace chess{
 
             return true;
         }
-        static bool isCastle(const Move& move, const BoardView& BoardView, GameState& GameState){
+        static bool isCastle(const Move& move, const BoardView& BoardView, const GameState& GameState){
             if(move.getYOffSet() !=0 || abs(move.getXOffSet()) != 2)
                 return false;
 
@@ -100,7 +100,7 @@ namespace chess{
         }
     }
 
-    MoveResult RookMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState& GameState) const {
+    MoveResult RookMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const {
         if(MovementTypes::isStraigt(move)){
 
             int stepX = (move.getXOffSet() == 0) ? 0 : (move.getXOffSet() > 0 ? 1 : -1);
@@ -111,8 +111,7 @@ namespace chess{
 
         return false;
     }
-
-    MoveResult BishopMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState& GameState) const {
+    MoveResult BishopMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const {
         if(MovementTypes::isDiagonal(move)){
 
             int stepX = (move.getXOffSet() > 0) ? 1 : -1;
@@ -123,10 +122,8 @@ namespace chess{
 
         return false;
     }
-
-    MoveResult KnightMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState& GameState) const { return { MovementTypes::isKnightMovement(move), NORMAL }; }
-
-    MoveResult KingMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState& GameState) const { 
+    MoveResult KnightMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const { return { MovementTypes::isKnightMovement(move), NORMAL }; }
+    MoveResult KingMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const { 
 
         if(MovementTypes::isKingMovement(move))
             return { true, NORMAL };
@@ -137,8 +134,7 @@ namespace chess{
 
         return false; 
     }
-
-    MoveResult QueenMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState& GameState) const { 
+    MoveResult QueenMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const { 
         if(MovementTypes::isStraigt(move) || MovementTypes::isDiagonal(move)){
 
             int stepX = (move.getXOffSet() == 0) ? 0 : (move.getXOffSet() > 0 ? 1 : -1);
@@ -149,8 +145,7 @@ namespace chess{
 
         return false;
     }
-
-    MoveResult PawnMovement::isMoveLegal(const Move& move, const BoardView& BoardView, GameState& GameState) const { 
+    MoveResult PawnMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const { 
         //verwandlung fehljt noch
         if(!move.getYOffSet())
             return false;

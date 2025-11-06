@@ -24,17 +24,15 @@ namespace chess
         const BoardView m_BoardView;
         const GameState m_GameState;
     public:
-
         Board(const std::string& filename);
         Board(Board& other) = delete;
         ~Board() = default;
-
+    public:
         void printBoard() const;
         bool makeMove(const Move& move);
         bool checkCheckmate(Color playerColor) const;
 
     private:
-
         void threatendSquaresInit();
         void updateThreatendSquares();
         std::vector<Position> getThreatendSquares(Color color) const;
