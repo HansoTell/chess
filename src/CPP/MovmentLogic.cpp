@@ -1,7 +1,6 @@
 #include "MovementLogic.h"
 #include "GameFigure.h"
 
-
 namespace chess{
 
     namespace MovementTypes{
@@ -82,6 +81,22 @@ namespace chess{
             int promotingRow = (move.m_PlayerColor == WHITE) ? 7 : 0;
 
             return move.m_DesiredPosition.y == promotingRow;
+        }
+    }
+
+    namespace ThreatTypes{
+        template<typename F, size_t T>
+        void getSlidingThreats(const BoardView& BoardView, const Position& figPos, std::array<std::pair<int, int> , T> steps, F callback){
+            for(auto[dx, dy]& : steps){
+                Position(figPos.x+dx, figPos.y+dy) newPos;
+                while(newPos.x >=0 && newPos.x <8 && newPos.y >=0 && newPos.y<8 && !BoardView.getFigureAt(newPos)){
+                    callback(newPos);
+                    newPos+=dx;
+                    newPos+=dy;
+                }
+                if(newPos.x >=0 && newPos.x <8 && newPos.y >=0 && newPos.y<8)
+                    callback(newPos);
+            } 
         }
     }
 
@@ -173,18 +188,50 @@ namespace chess{
     }
 
 
-    std::vector<Position> RookMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView) const{
-
+    std::vector<Position> RookMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
+        std::vector<Position> threats(14*sizeof(Position));
+        ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::StraightSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
+        return threats;
     }
-    std::vector<Position> BishopMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView) const{}
-    std::vector<Position> KnightMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView) const{
+    std::vector<Position> BishopMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
+        std::vector<Position> threats(14*sizeof(Position));
+        ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::DiagonalSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
+        return threats;
+    }
+    std::vector<Position> KnightMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
         std::vector<Position>& threatendSquares = AttackTabels::knightAttacks[figPos.index()];
         return threatendSquares;
     }
-    std::vector<Position> KingMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView) const{
+    std::vector<Position> KingMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
         std::vector<Position>& threatendSquares = AttackTabels::kingAttacks[figPos.index()];
         return threatendSquares;
     }
-    std::vector<Position> QueenMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView) const{}
-    std::vector<Position> PawnMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView) const{}
+    std::vector<Position> QueenMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
+        std::vector<Position> threats(27*sizeof(Position));
+        ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::StraightSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
+        ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::DiagonalSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
+        return threats;
+    }
+    std::vector<Position> PawnMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
+        int direction = (color == WHITE) ? 1 : -1;
+        std::vector<Position> threats(4*sizeof(Position));
+        threats.emplace_back(figPos.x+1, figPos.y+direction);
+        threats.emplace_back(figPos.x-1, figPos.y+direction);
+
+        int EnPassantRow = (color == WHITE) ? 4 : 3;
+        
+        if(EnPassantRow == figPos.y){
+            Position potentialPawnPos1(figPos.x +1, figPos.y);
+            Position potentialPawnPos2(figPos.x -1, figPos.y);
+            const GameFigure* potentialPawn1 = BoardView.getFigureAt(potentialPawnPos1);
+            const GameFigure* potentialPawn2 = BoardView.getFigureAt(potentialPawnPos2);
+            if(potentialPawn1 && potentialPawn1->getFigureType() == PAWN){
+                threats.emplace_back(potentialPawnPos1);
+            }
+
+            if(potentialPawn2 && potentialPawn2->getFigureType() == PAWN){
+                threats.emplace_back(potentialPawnPos2);
+            }
+        }
+    }
 }

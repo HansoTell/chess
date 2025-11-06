@@ -17,7 +17,7 @@ namespace chess{
             for(int i = 0; i < attackTabel.size(); i++){
                 int x = i / 8;
                 int y = i % 8;
-                for(auto[dx, dy] : offsetTabel){
+                for(auto[dx, dy]& : offsetTabel){
                     int offsetX = x + dx;
                     int offsetY = y + dy;
                     if(offsetX >= 0 && offsetX < 8 && offsetY >= 0 && offsetY < 8)
