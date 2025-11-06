@@ -30,9 +30,11 @@ namespace chess{
         ~GameFigure() = default;
         GameFigure& operator=(GameFigure&& other) = default;
     public:
-        MoveResult isMoveLegal(const Move& move, const BoardView& boardView, GameState GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
-        void printChar() const;
+        MoveResult isMoveLegal(const Move& move, const BoardView& boardView, GameState& GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
+        void updateThreats(const BoardView& BoardView) { m_Threats = m_MovmentLogic->getThreatendSquares(m_Position, BoardView); }
+        const std::vector<Position>& getThreatendSquares() const { return m_Threats; }
         FigureType getFigureType() const { return m_FigureType; }
+        void printChar() const;
     private:
         void printColor() const;
     };

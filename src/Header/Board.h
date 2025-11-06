@@ -34,13 +34,16 @@ namespace chess
         bool checkCheckmate(Color playerColor) const;
 
     private:
+
+        void threatendSquaresInit();
+        void updateThreatendSquares();
+        std::vector<Position> getThreatendSquares(Color color) const;
         void boardinit(const std::string& file);
         json parseJson(const std::string& file);
         void fillBoard(const json& jsonMap);
         MoveResult isMoveLegal(const Move& move) const;
-        bool checkCheck(const Move& move) const;
+        bool isInCheck(const Move& move) const;
         void executeMove(const Move& move);
-        std::vector<Position> getThreatendSquares() const;
     };
 }
 

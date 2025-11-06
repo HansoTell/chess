@@ -21,10 +21,8 @@ namespace chess{
         bool m_isBlackKingInCheck = false;
 
     public:
-        GameState();
+        GameState() { m_BlackThreatendSquares.reserve(64 * sizeof(Position)); m_WhiteThreatendSquares.reserve(64*sizeof(Position)); }
 
-        void updateThreatendSquares();
-        void ThreatendSquaresInit();
         bool hasKingMoved(Color color) const { return (color == WHITE) ? m_HasWhiteKingMoved : m_HasBlackKingMoved; }
         bool hasHRookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteHRookMoved : m_HasBlackHRookMoved; }
         bool hasARookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteARookMoved : m_HasBlackARookMoved; }
