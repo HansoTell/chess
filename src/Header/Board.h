@@ -22,7 +22,7 @@ namespace chess
         std::array<GameFigure*, boardSize> m_BoardPositions;
         std::vector<GameFigure> m_Figures;
         const BoardView m_BoardView;
-        const GameState m_GameState;
+        GameState m_GameState;
     public:
         Board(const std::string& filename);
         Board(Board& other) = delete;
@@ -30,17 +30,21 @@ namespace chess
     public:
         void printBoard() const;
         bool makeMove(const Move& move);
-        bool checkCheckmate(Color playerColor) const;
+        bool isCheckmate(Color playerColor) const;
 
     private:
+        json parseJson(const std::string& file);
+
+        void gameStateInit(const json& gameConfig);
+
         void threatendSquaresInit();
         void updateThreatendSquares();
-        std::vector<Position> getThreatendSquares(Color color) const;
-        void boardinit(const std::string& file);
-        json parseJson(const std::string& file);
-        void fillBoard(const json& jsonMap);
+
+        void boardinit(const json& gameConfig);
+
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(const Move& move) const;
+
         void executeMove(const Move& move);
     };
 }

@@ -4,7 +4,11 @@
 namespace chess{
     Board::Board(const std::string& file) : m_BoardPositions{}, m_BoardView(&m_BoardPositions) {
         m_Figures.reserve(32 * sizeof(GameFigure));
-        boardinit(file);
+
+        const json gameConifg = parseJson(file);
+
+        boardinit(gameConifg);
+        gameStateInit(gameConifg);   
     }
 
     json Board::parseJson(const std::string& file){
@@ -19,15 +23,31 @@ namespace chess{
         return j;
     }
 
-    void Board::boardinit(const std::string& file){
-        json boardPositionJson = parseJson(file);
+    void Board::gameStateInit(const json& gameConfig){
+        //json parsen für einstellungen
 
-        fillBoard(boardPositionJson);
+        threatendSquaresInit();
     }
 
-    void Board::fillBoard(const json& jsonMap){
+    void Board::threatendSquaresInit(){
+        for(auto& figure : m_Figures){
+            figure.updateThreats(m_BoardView);
+            Color figureColor = figure.getColor();
 
-        auto& figure_position_map= jsonMap["figure_positions"];
+            std::vector<Position>& overallThreats = m_GameState.getThreatendSquares(figureColor);
+            const std::vector<Position>& figureThreats = figure.getThreatendSquares();
+            overallThreats.insert(overallThreats.end(), figureThreats.begin(), figureThreats.end());
+        }
+    }
+
+    void Board::updateThreatendSquares(){
+
+    }
+
+
+    void Board::boardinit(const json& gameConfig){
+
+        auto& figure_position_map= gameConfig["figure_positions"];
         
         for(auto&[figure_Type, data_Figures] : figure_position_map.items()){
             for(auto& data_figure : data_Figures){
@@ -43,6 +63,7 @@ namespace chess{
                 m_BoardPositions[posX + posY*boardWidth] = &m_Figures.back();
             }
         }
+
     }
 
     void Board::printBoard() const {
@@ -74,13 +95,9 @@ namespace chess{
             return false;
         }
 
-        //theoretisch also wenn halt movetype nicht gesetzt ist was mache wir dann? Oder kann das einfach net vorkommen
-
         executeMove(move);
 
-        //brauchen check ob figur verwandelt werden kann(bauer auf 8tem rang)
-
-        return false;
+        return true;
     }
 
     void Board::executeMove(const Move& Move){
@@ -89,7 +106,6 @@ namespace chess{
 
     MoveResult Board::isMoveLegal(const Move& move) const{
         //überhaupt gucken das in der ausgangsposition auch schön eine figur ist
-        //auch noch problem bei kson datei gamestate beim erstellen deafult afu nicht moved was falsch ist wenn rooks weg sind oder so
         //checken ob Move out of bounds
         //checken dass move nicht stehend:
         MoveResult moveResult = m_BoardPositions[move.m_PiecePosition.index()]->isMoveLegal(move, m_BoardView, m_GameState);
