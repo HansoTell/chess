@@ -28,6 +28,7 @@ namespace chess{
         bool hasKingMoved(Color color) const { return (color == WHITE) ? m_HasWhiteKingMoved : m_HasBlackKingMoved; }
         bool hasHRookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteHRookMoved : m_HasBlackHRookMoved; }
         bool hasARookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteARookMoved : m_HasBlackARookMoved; }
-        std::vector<Position>& getThreatendSquares(Color color); 
+        const std::vector<Position>& getThreatendSquares(Color color) const; 
+        std::vector<Position>& getThreatendSquares(Color color);
     };
 }

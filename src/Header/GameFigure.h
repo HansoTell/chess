@@ -35,6 +35,7 @@ namespace chess{
         const std::vector<Position>& getThreatendSquares() const { return m_Threats; }
         FigureType getFigureType() const { return m_FigureType; }
         Color getColor() const { return m_Color; }
+        const Position& getPosition() const { return m_Position; }
         void printChar() const;
     private:
         void printColor() const;

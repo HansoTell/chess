@@ -4,6 +4,7 @@
 #include <fstream>
 #include <memory>
 #include <vector>
+#include <algorithm>
 #include <nlohmann/json.hpp>
 #include "GameFigure.h"
 #include "Move.h"
@@ -38,14 +39,15 @@ namespace chess
         void gameStateInit(const json& gameConfig);
 
         void threatendSquaresInit();
-        void updateThreatendSquares();
+        void updateThreatendSquares(const Move& move);
 
         void boardinit(const json& gameConfig);
+        void updateGameState(const Move& move);
 
         MoveResult isMoveLegal(const Move& move) const;
-        bool isInCheck(const Move& move) const;
+        bool isInCheck(Color color) const;
 
-        void executeMove(const Move& move);
+        void executeMove(const Move& move, MoveResult moveresult);
     };
 }
 

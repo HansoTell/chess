@@ -40,7 +40,9 @@ namespace chess{
         }
     }
 
-    void Board::updateThreatendSquares(){
+    void Board::updateThreatendSquares(const Move& move){
+        //muss schwarzes und weißes board aktuallisieren
+        // große frage ja eig was machen wa setzten wir hier schon die neuen sachen im game state oder net
 
     }
 
@@ -95,13 +97,30 @@ namespace chess{
             return false;
         }
 
-        executeMove(move);
+        if(moveResult.m_MoveType == PROMOTING){
+            //Welche figur man will erfragen --> neue klasse die ausgaben macht und sich um sowas kümmert --> eventuell wird sich das aber auch noch erledigen wegen spielablauf deisgn
+        }
+        //checken ob eigens board in schach, simulation von neuen threatend positions müssen simuliert werden 
+        //brauchen hier für schon info ob promoting ok ist
+        if(isInCheck(move.m_PlayerColor))
+            return false;
+
+
+        executeMove(move, moveResult);
+        updateGameState(move);
 
         return true;
     }
 
-    void Board::executeMove(const Move& Move){
-        
+    void Board::updateGameState(const Move& move){
+        //GameState updaten
+        updateThreatendSquares(move);
+        //Ist der andere könig im schach --> gamestate setzten
+        isInCheck(opposite(move.m_PlayerColor));
+    }
+
+    void Board::executeMove(const Move& Move, MoveResult moveResult){
+        //nocht vergessen, dass position in figur auch geändert werden muss und raus figuren auch aus vector entfernt werden müssen
     }
 
     MoveResult Board::isMoveLegal(const Move& move) const{
@@ -114,5 +133,18 @@ namespace chess{
 
         //Brauchen check ob eigener oder anderer könig im schach ist sollte eigener im schach sein falscher zug, sollte anderer im schach sein --> gamestate hscach auf true setzten
         return moveResult;
+    }
+
+    bool Board::isInCheck(Color color) const {
+        for(auto& figure : m_Figures){
+            if(figure.getFigureType() == KING && figure.getColor() == color){
+                const std::vector<Position>& enemyThreats = m_GameState.getThreatendSquares(opposite(color));
+
+                return std::find(enemyThreats.begin(), enemyThreats.end(), figure.getPosition()) != enemyThreats.end();
+            }
+        }
+        //später exception handeli9ng oder so
+        std::cout << "No King found kinda weird" << "\n";
+        return false;
     }
 }
