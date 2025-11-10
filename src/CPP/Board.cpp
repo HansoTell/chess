@@ -100,11 +100,6 @@ namespace chess{
         if(moveResult.m_MoveType == PROMOTING){
             //Welche figur man will erfragen --> neue klasse die ausgaben macht und sich um sowas kümmert --> eventuell wird sich das aber auch noch erledigen wegen spielablauf deisgn
         }
-        //checken ob eigens board in schach, simulation von neuen threatend positions müssen simuliert werden 
-        //brauchen hier für schon info ob promoting ok ist
-        if(isInCheck(move.m_PlayerColor))
-            return false;
-
 
         executeMove(move, moveResult);
         updateGameState(move);
@@ -113,10 +108,11 @@ namespace chess{
     }
 
     void Board::updateGameState(const Move& move){
-        //GameState updaten
         updateThreatendSquares(move);
-        //Ist der andere könig im schach --> gamestate setzten
-        isInCheck(opposite(move.m_PlayerColor));
+        //GameState updaten --> also rochaden oder king/rook movement...
+        if(isInCheck(opposite(move.m_PlayerColor)))
+            m_GameState.toggleKingInCheck(opposite(move.m_PlayerColor));
+        
     }
 
     void Board::executeMove(const Move& Move, MoveResult moveResult){
@@ -131,7 +127,11 @@ namespace chess{
         if(!moveResult.m_IsMoveLegal) 
             return false;
 
-        //Brauchen check ob eigener oder anderer könig im schach ist sollte eigener im schach sein falscher zug, sollte anderer im schach sein --> gamestate hscach auf true setzten
+        //checken ob eigens board in schach, simulation von neuen threatend positions müssen simuliert werden 
+        if(wouldBeInCheck())
+            return false;
+
+            
         return moveResult;
     }
 
@@ -143,7 +143,7 @@ namespace chess{
                 return std::find(enemyThreats.begin(), enemyThreats.end(), figure.getPosition()) != enemyThreats.end();
             }
         }
-        //später exception handeli9ng oder so
+        //später exception handeling oder so
         std::cout << "No King found kinda weird" << "\n";
         return false;
     }

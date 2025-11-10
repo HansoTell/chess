@@ -46,6 +46,7 @@ namespace chess
 
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(Color color) const;
+        bool wouldBeInCheck() const;
 
         void executeMove(const Move& move, MoveResult moveresult);
     };

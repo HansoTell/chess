@@ -7,6 +7,7 @@
 #include "MoveType.h"
 #include "AttackTabels.h"
 #include <math.h>
+#include <algorithm>
 #include <memory>
 
 namespace chess{

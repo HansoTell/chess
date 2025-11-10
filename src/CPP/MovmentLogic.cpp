@@ -72,8 +72,14 @@ namespace chess{
                 return false; 
             
 
-
-            //einzige bedingun die fehljt sind die bedrohten felder
+            int checkFrom = (isShortCastle == 1) ? move.m_PiecePosition.x : move.m_DesiredPosition.x;
+            int checkTo = (isShortCastle == 1) ? move.m_DesiredPosition.x : move.m_PiecePosition.x ;
+            const std::vector<Position>& enemyThreats = GameState.getThreatendSquares(opposite(move.m_PlayerColor));
+            for(int i = checkFrom; i <= checkTo; i++){
+                if(std::find(enemyThreats.begin(), enemyThreats.end(), Position(i, move.m_PiecePosition.y)) != enemyThreats.end()){
+                    return false;
+                }
+            }
             
             return true;
         }
