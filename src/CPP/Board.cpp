@@ -88,7 +88,6 @@ namespace chess{
         std::cout << "   | A  | B  | C  | D  | E  | F  | G  | H  |" << "\n";
     }
 
-
     bool Board::makeMove(const Move& move){
 
         MoveResult moveResult = isMoveLegal(move);
@@ -101,15 +100,21 @@ namespace chess{
             //Welche figur man will erfragen --> neue klasse die ausgaben macht und sich um sowas kümmert --> eventuell wird sich das aber auch noch erledigen wegen spielablauf deisgn
         }
 
+        FigureType movedFigureType = m_BoardView.getFigureAt(move.m_PiecePosition)->getFigureType();
         executeMove(move, moveResult);
-        updateGameState(move);
+        updateGameState(move, moveResult.m_MoveType, movedFigureType);
 
         return true;
     }
 
-    void Board::updateGameState(const Move& move){
+    void Board::updateGameState(const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType){
         updateThreatendSquares(move);
-        //GameState updaten --> also rochaden oder king/rook movement...
+
+        m_GameState.updateGameState(move, moveType, movedFigureType);
+
+        if(m_GameState.isKingInCheck(move.m_PlayerColor))
+            m_GameState.toggleKingInCheck(move.m_PlayerColor);
+
         if(isInCheck(opposite(move.m_PlayerColor)))
             m_GameState.toggleKingInCheck(opposite(move.m_PlayerColor));
         
@@ -120,10 +125,21 @@ namespace chess{
     }
 
     MoveResult Board::isMoveLegal(const Move& move) const{
-        //überhaupt gucken das in der ausgangsposition auch schön eine figur ist
-        //checken ob Move out of bounds
-        //checken dass move nicht stehend:
-        MoveResult moveResult = m_BoardPositions[move.m_PiecePosition.index()]->isMoveLegal(move, m_BoardView, m_GameState);
+        if(move.isOutOfBounds())
+            return false;
+
+        const GameFigure* movedFigure = m_BoardView.getFigureAt(move.m_PiecePosition);
+
+        if(!movedFigure)
+            return false;
+        
+        if(movedFigure->getColor() != move.m_PlayerColor)
+            return false;
+        
+        if(move.getXOffSet()==0 && move.getYOffSet() == 0)
+            return false;
+
+        MoveResult moveResult = movedFigure->isMoveLegal(move, m_BoardView, m_GameState);
         if(!moveResult.m_IsMoveLegal) 
             return false;
 
@@ -143,7 +159,7 @@ namespace chess{
                 return std::find(enemyThreats.begin(), enemyThreats.end(), figure.getPosition()) != enemyThreats.end();
             }
         }
-        //später exception handeling oder so
+
         std::cout << "No King found kinda weird" << "\n";
         return false;
     }

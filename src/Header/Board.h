@@ -42,7 +42,7 @@ namespace chess
         void updateThreatendSquares(const Move& move);
 
         void boardinit(const json& gameConfig);
-        void updateGameState(const Move& move);
+        void updateGameState(const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
 
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(Color color) const;

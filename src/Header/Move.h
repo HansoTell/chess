@@ -23,5 +23,6 @@ namespace chess{
 
         int getXOffSet() const { return m_DesiredPosition.x - m_PiecePosition.x; }
         int getYOffSet() const { return m_DesiredPosition.y - m_DesiredPosition.y; }
+        bool isOutOfBounds() const;
     };
 }
