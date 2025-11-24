@@ -91,7 +91,6 @@ namespace chess{
         ownColorThreats.insert(ownColorThreats.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
     }
 
-
     void Board::boardinit(const json& gameConfig){
 
         auto& figure_position_map= gameConfig["figure_positions"];
