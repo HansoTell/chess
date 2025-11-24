@@ -94,7 +94,7 @@ namespace chess{
         template<typename F, size_t T>
         void getSlidingThreats(const BoardView& BoardView, const Position& figPos, std::array<std::pair<int, int> , T> steps, F callback){
             for(auto[dx, dy]& : steps){
-                Position(figPos.x+dx, figPos.y+dy) newPos;
+                Position newPos(figPos.x+dx, figPos.y+dy);
                 while(newPos.x >=0 && newPos.x <8 && newPos.y >=0 && newPos.y<8 && !BoardView.getFigureAt(newPos)){
                     callback(newPos);
                     newPos+=dx;
