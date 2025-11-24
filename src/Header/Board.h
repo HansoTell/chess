@@ -40,6 +40,7 @@ namespace chess
 
         void threatendSquaresInit();
         void updateThreatendSquares(const Move& move);
+        void updateThreatMap(GameFigure* figure);
 
         void boardinit(const json& gameConfig);
         void updateGameState(const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);

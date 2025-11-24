@@ -2,6 +2,21 @@
 
 
 namespace chess{
+
+    static bool isInRay(const Position& rayCenter, const Position& positionToCheck){
+        //straight movement
+        if(rayCenter.x == positionToCheck.x || rayCenter.y == positionToCheck.y)
+            return true;
+        
+        //diagonal Movement
+        int x_OffSet = rayCenter.x - positionToCheck.x;
+        int y_OffSet = rayCenter.y - positionToCheck.y;
+        if(x_OffSet == y_OffSet || x_OffSet == -y_OffSet)
+           return true;
+           
+        return false;
+    }
+
     Board::Board(const std::string& file) : m_BoardPositions{}, m_BoardView(&m_BoardPositions) {
         m_Figures.reserve(32 * sizeof(GameFigure));
 
@@ -31,8 +46,7 @@ namespace chess{
 
     void Board::threatendSquaresInit(){
         for(auto& figure : m_Figures){
-            auto newThreats = figure.updateThreats(m_BoardView);
-            figure.setThreats(newThreats);
+            figure.updateThreats(m_BoardView);
             Color figureColor = figure.getColor();
 
             std::vector<Position>& overallThreats = m_GameState.getThreatendSquares(figureColor);
@@ -42,11 +56,29 @@ namespace chess{
     }
 
     void Board::updateThreatendSquares(const Move& move){
-        std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(move.m_PlayerColor);
-        std::vector<Position>& enemyColorThreats = m_GameState.getThreatendSquares(opposite(move.m_PlayerColor));
 
         GameFigure* movedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
-        const auto& old_Figure_Threats = movedFigure->getThreatendSquares();
+
+        if(movedFigure->getFigureType() == JUMPING){
+            updateThreatMap(movedFigure);
+        }
+
+        //updating all Sliding pieces
+        for(auto& figure : m_Figures){
+            if(figure.getMovementType() == SLIDING && (isInRay(move.m_PiecePosition, figure.getPosition()) || isInRay(move.m_DesiredPosition, figure.getPosition()))){
+                GameFigure* figure_ptr = &figure;
+                updateThreatMap(figure_ptr);
+            }
+        }
+
+
+        //was ist mit caputered figuren threats entfernen
+        //enpassant einfluss nochmal überlegen
+    }
+
+    void Board::updateThreatMap(GameFigure* figure){
+        std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
+        const auto& old_Figure_Threats = figure->getThreatendSquares();
 
         //Alte Threats entfernen
         for(const Position& threat : old_Figure_Threats){
@@ -54,26 +86,9 @@ namespace chess{
             ownColorThreats.erase(toRemoveThreat);
         }
 
-        //Figur neue Threats hinzufügen --> überlegen anpassen ob sliding oder jumping
-        //Frage bei sliding pieces müssen eig ja nicht alle entfernt werdfen --> bei straight: eine reihe sonst gleich außer neue posi und alte posi
-        //-->Diagonal ja das gleiche reihe müsste nicht updatet werden aber wie setzt man das um??
-        //Überlegen enum mov direc einfügen, um noch mehr zu reduzieren --> funktioniert nicht, weil figur die beides kann jadas zusammen bricht
-        auto newThreats = movedFigure->updateThreats(m_BoardView);
-        movedFigure->setThreats(newThreats);
-        ownColorThreats.insert(ownColorThreats.end(), movedFigure->getThreatendSquares().begin(), movedFigure->getThreatendSquares().end());
-
-
-        for(auto& figure : m_Figures){
-            if(figure.getMovementType() == SLIDING){
-                
-            }
-        }
-
-
-
-
-        //gelten bei enpassant und castling extra regeln
-        //was ist mit caputered figuren threats entfernen
+        //updating to new Threats
+        figure->updateThreats(m_BoardView);
+        ownColorThreats.insert(ownColorThreats.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
     }
 
 
