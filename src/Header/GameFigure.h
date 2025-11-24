@@ -6,6 +6,7 @@
 #include "FigureTypes.h"
 #include "GameState.h"
 #include "MoveResult.h"
+#include "MovementTypes.h"
 #include <string>
 #include <memory>
 #include <iostream>
@@ -21,22 +22,27 @@ namespace chess{
         Position m_Position;
         std::unique_ptr<MovementLogic> m_MovmentLogic;
         FigureType m_FigureType;
+        MovementTypes m_MovementType;
         std::vector<Position> m_Threats;
 
     public:
-        GameFigure(Color Color, char figureChar, Position& pos, std::unique_ptr<MovementLogic> MovmentLogic, FigureType figureType);
+        GameFigure(Color Color, char figureChar, Position& pos, std::unique_ptr<MovementLogic> MovmentLogic, FigureType figureType, MovementTypes movementType);
         GameFigure(const GameFigure& other);
         GameFigure(GameFigure&& other);
         ~GameFigure() = default;
         GameFigure& operator=(GameFigure&& other) = default;
     public:
         MoveResult isMoveLegal(const Move& move, const BoardView& boardView, const GameState& GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
-        void updateThreats(const BoardView& BoardView) { m_Threats = m_MovmentLogic->getThreatendSquares(m_Position, BoardView, m_Color); }
-        const std::vector<Position>& getThreatendSquares() const { return m_Threats; }
-        FigureType getFigureType() const { return m_FigureType; }
-        Color getColor() const { return m_Color; }
-        const Position& getPosition() const { return m_Position; }
+        const std::vector<Position> updateThreats(const BoardView& BoardView) { return m_MovmentLogic->getThreatendSquares(m_Position, BoardView, m_Color); }
+        void setThreats(const std::vector<Position>& newThreats) { m_Threats = newThreats; }
         void printChar() const;
+    public:
+        MovementTypes getMovementType() const { return m_MovementType; }
+        FigureType getFigureType() const { return m_FigureType; }
+        const Position& getPosition() const { return m_Position; }
+        Color getColor() const { return m_Color; }
+        const std::vector<Position>& getThreatendSquares() const { return m_Threats; }
+
     private:
         void printColor() const;
     };

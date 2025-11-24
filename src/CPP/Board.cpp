@@ -31,7 +31,8 @@ namespace chess{
 
     void Board::threatendSquaresInit(){
         for(auto& figure : m_Figures){
-            figure.updateThreats(m_BoardView);
+            auto newThreats = figure.updateThreats(m_BoardView);
+            figure.setThreats(newThreats);
             Color figureColor = figure.getColor();
 
             std::vector<Position>& overallThreats = m_GameState.getThreatendSquares(figureColor);
@@ -41,9 +42,38 @@ namespace chess{
     }
 
     void Board::updateThreatendSquares(const Move& move){
-        //muss schwarzes und weißes board aktuallisieren
-        // große frage ja eig was machen wa setzten wir hier schon die neuen sachen im game state oder net
+        std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(move.m_PlayerColor);
+        std::vector<Position>& enemyColorThreats = m_GameState.getThreatendSquares(opposite(move.m_PlayerColor));
 
+        GameFigure* movedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
+        const auto& old_Figure_Threats = movedFigure->getThreatendSquares();
+
+        //Alte Threats entfernen
+        for(const Position& threat : old_Figure_Threats){
+            auto toRemoveThreat = std::find(ownColorThreats.cbegin(), ownColorThreats.cend(), threat);
+            ownColorThreats.erase(toRemoveThreat);
+        }
+
+        //Figur neue Threats hinzufügen --> überlegen anpassen ob sliding oder jumping
+        //Frage bei sliding pieces müssen eig ja nicht alle entfernt werdfen --> bei straight: eine reihe sonst gleich außer neue posi und alte posi
+        //-->Diagonal ja das gleiche reihe müsste nicht updatet werden aber wie setzt man das um??
+        //Überlegen enum mov direc einfügen, um noch mehr zu reduzieren --> funktioniert nicht, weil figur die beides kann jadas zusammen bricht
+        auto newThreats = movedFigure->updateThreats(m_BoardView);
+        movedFigure->setThreats(newThreats);
+        ownColorThreats.insert(ownColorThreats.end(), movedFigure->getThreatendSquares().begin(), movedFigure->getThreatendSquares().end());
+
+
+        for(auto& figure : m_Figures){
+            if(figure.getMovementType() == SLIDING){
+                
+            }
+        }
+
+
+
+
+        //gelten bei enpassant und castling extra regeln
+        //was ist mit caputered figuren threats entfernen
     }
 
 
@@ -102,6 +132,7 @@ namespace chess{
 
         FigureType movedFigureType = m_BoardView.getFigureAt(move.m_PiecePosition)->getFigureType();
         executeMove(move, moveResult);
+        updateThreatendSquares(move);
         updateGameState(move, moveResult.m_MoveType, movedFigureType);
 
         return true;
