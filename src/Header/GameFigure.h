@@ -31,6 +31,7 @@ namespace chess{
         GameFigure(GameFigure&& other);
         ~GameFigure() = default;
         GameFigure& operator=(GameFigure&& other) = default;
+        bool operator==(GameFigure& other) {return this->m_Position == other.m_Position; }
     public:
         MoveResult isMoveLegal(const Move& move, const BoardView& boardView, const GameState& GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
         void updateThreats(const BoardView& BoardView) { m_Threats =  m_MovmentLogic->getThreatendSquares(m_Position, BoardView, m_Color); }
@@ -39,6 +40,7 @@ namespace chess{
         MovementTypes getMovementType() const { return m_MovementType; }
         FigureType getFigureType() const { return m_FigureType; }
         const Position& getPosition() const { return m_Position; }
+        void setPosition(Position pos) { m_Position = pos; }
         Color getColor() const { return m_Color; }
         const std::vector<Position>& getThreatendSquares() const { return m_Threats; }
 

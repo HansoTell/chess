@@ -169,11 +169,38 @@ namespace chess{
 
         if(isInCheck(opposite(move.m_PlayerColor)))
             m_GameState.toggleKingInCheck(opposite(move.m_PlayerColor));
-        
     }
 
-    std::optional<GameFigure> Board::executeMove(const Move& Move, MoveResult moveResult){
-        //nocht vergessen, dass position in figur auch geändert werden muss und raus figuren auch aus vector entfernt werden müssen
+    std::optional<GameFigure> Board::executeMove(const Move& move, MoveResult moveResult){
+        std::optional<GameFigure> capturedFigure;
+        switch (moveResult.m_MoveType.value())
+        {
+        case NORMAL:{
+            GameFigure* capturedFigure_ptr = m_BoardPositions[move.m_DesiredPosition.index()]; 
+            GameFigure* movedFigure_ptr =  m_BoardPositions[move.m_PiecePosition.index()];
+            if(capturedFigure_ptr){
+                auto capturedFigure_IT = std::find(m_Figures.begin(), m_Figures.end(), *capturedFigure);
+                capturedFigure = std::move(*capturedFigure_IT);
+                m_Figures.erase(capturedFigure_IT);
+            }
+            movedFigure_ptr->setPosition(move.m_DesiredPosition);
+
+            capturedFigure_ptr = movedFigure_ptr;
+            movedFigure_ptr = nullptr;
+            break;
+        }
+        case EN_PASSANT:{
+
+            break;
+        }
+        case CASTEL:
+            break;
+        case PROMOTING:
+            break;
+        }
+
+        return capturedFigure;
+        //nicht vergessen raus figuren auch aus vector entfernt werden müssen 
     }
 
     MoveResult Board::isMoveLegal(const Move& move) const{

@@ -20,7 +20,10 @@ namespace chess{
         m_Color(other.m_Color), 
         m_Position(other.m_Position), 
         m_FigureChar(other.m_FigureChar), 
-        m_MovmentLogic(std::move(other.m_MovmentLogic))
+        m_MovmentLogic(std::move(other.m_MovmentLogic)),
+        m_FigureType(other.m_FigureType),
+        m_MovementType(other.m_MovementType),
+        m_Threats(std::move(other.m_Threats))
     {
         other.m_Color = WHITE;
         other.m_Position.x = 0;
