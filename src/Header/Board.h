@@ -39,17 +39,18 @@ namespace chess
         void gameStateInit(const json& gameConfig);
 
         void threatendSquaresInit();
-        void updateThreatendSquares(const Move& move);
-        void updateThreatMap(GameFigure* figure);
+        void updateThreatendSquares(std::optional<GameFigure>& capturedFigure, const Move& move);
+        void removeOldThreats(GameFigure* figure);
+        void refreshThreats(GameFigure* figure);
 
         void boardinit(const json& gameConfig);
-        void updateGameState(const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
+        void updateGameState(std::optional<GameFigure>& capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
 
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(Color color) const;
         bool wouldBeInCheck() const;
 
-        void executeMove(const Move& move, MoveResult moveresult);
+        std::optional<GameFigure> executeMove(const Move& move, MoveResult moveresult);
     };
 }
 

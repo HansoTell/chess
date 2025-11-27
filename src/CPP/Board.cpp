@@ -55,38 +55,46 @@ namespace chess{
         }
     }
 
-    void Board::updateThreatendSquares(const Move& move){
+    void Board::updateThreatendSquares(std::optional<GameFigure>& capturedFigure, const Move& move){
 
         GameFigure* movedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
 
+        if(capturedFigure.has_value()){
+            GameFigure* capturedFigure_ptr = &capturedFigure.value();
+            removeOldThreats(capturedFigure_ptr);
+        }        
+
         if(movedFigure->getFigureType() == JUMPING){
-            updateThreatMap(movedFigure);
+            removeOldThreats(movedFigure);
+            refreshThreats(movedFigure);
         }
 
-        //updating all Sliding pieces
         for(auto& figure : m_Figures){
-            if(figure.getMovementType() == SLIDING && (isInRay(move.m_PiecePosition, figure.getPosition()) || isInRay(move.m_DesiredPosition, figure.getPosition()))){
+            if(figure.getMovementType() == SLIDING && 
+                    (isInRay(move.m_PiecePosition, figure.getPosition()) 
+                    || isInRay(move.m_DesiredPosition, figure.getPosition()) 
+                    || (capturedFigure.has_value() && isInRay(capturedFigure->getPosition(), figure.getPosition()))))
+            {
                 GameFigure* figure_ptr = &figure;
-                updateThreatMap(figure_ptr);
+                removeOldThreats(figure_ptr);
+                refreshThreats(figure_ptr);
             }
         }
-
-
-        //was ist mit caputered figuren threats entfernen
-        //enpassant einfluss nochmal überlegen
     }
 
-    void Board::updateThreatMap(GameFigure* figure){
+    void Board::removeOldThreats(GameFigure* figure){
         std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
         const auto& old_Figure_Threats = figure->getThreatendSquares();
 
-        //Alte Threats entfernen
         for(const Position& threat : old_Figure_Threats){
             auto toRemoveThreat = std::find(ownColorThreats.cbegin(), ownColorThreats.cend(), threat);
             ownColorThreats.erase(toRemoveThreat);
         }
+    }    
 
-        //updating to new Threats
+    void Board::refreshThreats(GameFigure* figure){
+        std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
+
         figure->updateThreats(m_BoardView);
         ownColorThreats.insert(ownColorThreats.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
     }
@@ -145,15 +153,14 @@ namespace chess{
         }
 
         FigureType movedFigureType = m_BoardView.getFigureAt(move.m_PiecePosition)->getFigureType();
-        executeMove(move, moveResult);
-        updateThreatendSquares(move);
-        updateGameState(move, moveResult.m_MoveType, movedFigureType);
+        auto capturedFigure = executeMove(move, moveResult);
+        updateGameState(capturedFigure, move, moveResult.m_MoveType, movedFigureType);
 
         return true;
     }
 
-    void Board::updateGameState(const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType){
-        updateThreatendSquares(move);
+    void Board::updateGameState(std::optional<GameFigure>& capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType){
+        updateThreatendSquares(capturedFigure, move);
 
         m_GameState.updateGameState(move, moveType, movedFigureType);
 
@@ -165,7 +172,7 @@ namespace chess{
         
     }
 
-    void Board::executeMove(const Move& Move, MoveResult moveResult){
+    std::optional<GameFigure> Board::executeMove(const Move& Move, MoveResult moveResult){
         //nocht vergessen, dass position in figur auch geändert werden muss und raus figuren auch aus vector entfernt werden müssen
     }
 
