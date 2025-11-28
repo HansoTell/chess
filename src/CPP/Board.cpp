@@ -193,8 +193,23 @@ namespace chess{
 
             break;
         }
-        case CASTEL:
+        case CASTEL:{
+            bool shortCastle = (move.getXOffSet() > 0); 
+            Position rook_Position = (shortCastle) ? Position(7, move.m_PiecePosition.y): Position(0, move.m_PiecePosition.y);
+            Position rook_DesiredPosition = (shortCastle) ? Position(move.m_DesiredPosition.x -1, move.m_PiecePosition.y) : Position(move.m_DesiredPosition.x+1, move.m_PiecePosition.y);
+            GameFigure* moved_King = m_BoardPositions[move.m_PiecePosition.index()];
+            GameFigure* moved_Rook = m_BoardPositions[rook_Position.index()];
+
+            moved_King->setPosition(move.m_DesiredPosition);
+            moved_Rook->setPosition(rook_DesiredPosition);
+
+            m_BoardPositions[move.m_DesiredPosition.index()] = moved_King;
+            moved_King=nullptr;
+
+            m_BoardPositions[rook_DesiredPosition.index()] = moved_Rook;
+            moved_Rook=nullptr;
             break;
+        }
         case PROMOTING:
             break;
         }
