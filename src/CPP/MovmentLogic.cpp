@@ -13,9 +13,7 @@ namespace chess{
             return false;       
         }
         static bool isDiagonal(const Move& Move){
-            if(abs(Move.getXOffSet())== abs(Move.getYOffSet()))
-                return true;
-            return false;
+            return abs(Move.getXOffSet()) == abs(Move.getYOffSet());
         }
         static bool isKnightMovement(const Move& Move){
             int abs_DealtaX = abs(Move.getXOffSet());
@@ -30,7 +28,8 @@ namespace chess{
             return false; 
         }
         static bool isEnPassant(const Move& move, const BoardView& BoardView){
-            const Position isEnPassantPawnPos(move.m_DesiredPosition.x, move.m_DesiredPosition.y -1);
+            int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
+            const Position isEnPassantPawnPos(move.m_DesiredPosition.x, move.m_DesiredPosition.y - movementDirection);
             int EnPassantRow = (move.m_PlayerColor == WHITE) ? 4 : 3;
 
            return BoardView.getFigureAt( isEnPassantPawnPos ) && 
@@ -152,7 +151,6 @@ namespace chess{
         return false;
     }
     MoveResult PawnMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const { 
-        //verwandlung fehljt noch
         if(!move.getYOffSet())
             return false;
 
@@ -178,12 +176,14 @@ namespace chess{
 
             return { MovementTypes::isPathClear(moveCopy, BoardView, stepX, stepY), moveType};
         }
-        
-        if(MovementTypes::isDiagonal(move) && abs(move.getYOffSet() == 1))
-            return {isDiagonalPathClear(move, BoardView), moveType};
-        
-        if(MovementTypes::isEnPassant(move, BoardView))
-            return {true, EN_PASSANT };
+        if(MovementTypes::isDiagonal(move) && abs(move.getYOffSet() == 1)){
+            if(BoardView.getFigureAt(move.m_DesiredPosition))
+                return {isDiagonalPathClear(move, BoardView), moveType};
+            
+            
+            if(MovementTypes::isEnPassant(move, BoardView))
+                return {true, EN_PASSANT };
+        }
 
         return false;
     }
