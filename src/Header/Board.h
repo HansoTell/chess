@@ -13,6 +13,7 @@
 #include "BoardView.h"
 #include "GameState.h"
 #include "MoveResult.h"
+#include "BoardPrinter.h"
 
 using json = nlohmann::json;
 namespace chess
@@ -24,8 +25,9 @@ namespace chess
         std::vector<GameFigure> m_Figures;
         const BoardView m_BoardView;
         GameState m_GameState;
+        std::unique_ptr<BoardPrinter> m_BoardPrinter;
     public:
-        Board(const std::string& filename);
+        Board(const std::string& filename, std::unique_ptr<BoardPrinter> boardPrinter);
         Board(Board& other) = delete;
         ~Board() = default;
     public:

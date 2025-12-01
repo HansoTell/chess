@@ -17,7 +17,11 @@ namespace chess{
         return false;
     }
 
-    Board::Board(const std::string& file) : m_BoardPositions{}, m_BoardView(&m_BoardPositions) {
+    Board::Board(const std::string& file, std::unique_ptr<BoardPrinter> boardPrinter) : 
+        m_BoardPositions{}, 
+        m_BoardView(&m_BoardPositions), 
+        m_BoardPrinter(std::move(boardPrinter)) 
+    {
         m_Figures.reserve(32 * sizeof(GameFigure));
 
         const json gameConifg = parseJson(file);
@@ -118,7 +122,6 @@ namespace chess{
                 m_BoardPositions[posX + posY*boardWidth] = &m_Figures.back();
             }
         }
-
     }
 
     void Board::printBoard() const {
@@ -216,7 +219,7 @@ namespace chess{
 
             capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
 
-            //Promotin Logic -> m_Figure && m_BoardPositions updaten!!! Neue Figur konstrukten
+            //Promotin Logic -> m_Figure & m_BoardPositions updaten!!! Neue Figur konstrukten
 
             break;
         }
@@ -274,7 +277,7 @@ namespace chess{
         for(auto& figure : m_Figures){
             if(figure.getFigureType() == KING && figure.getColor() == color){
                 const std::vector<Position>& enemyThreats = m_GameState.getThreatendSquares(opposite(color));
-
+                
                 return std::find(enemyThreats.begin(), enemyThreats.end(), figure.getPosition()) != enemyThreats.end();
             }
         }

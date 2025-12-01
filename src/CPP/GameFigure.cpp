@@ -7,7 +7,8 @@ namespace chess{
         m_Color(color), 
         m_FigureChar(figureChar), 
         m_Position(pos), 
-        m_MovmentLogic(std::move(MovementLogic)), m_FigureType(figureType), 
+        m_MovmentLogic(std::move(MovementLogic)), 
+        m_FigureType(figureType), 
         m_MovementType(movementType)
         {}
     GameFigure::GameFigure(const GameFigure& other) : 
