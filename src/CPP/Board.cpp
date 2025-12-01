@@ -88,7 +88,8 @@ namespace chess{
 
         for(const Position& threat : old_Figure_Threats){
             auto toRemoveThreat = std::find(ownColorThreats.cbegin(), ownColorThreats.cend(), threat);
-            ownColorThreats.erase(toRemoveThreat);
+            if(toRemoveThreat != ownColorThreats.end())
+                ownColorThreats.erase(toRemoveThreat);
         }
     }    
 
@@ -176,46 +177,70 @@ namespace chess{
         switch (moveResult.m_MoveType.value())
         {
         case NORMAL:{
-            GameFigure* capturedFigure_ptr = m_BoardPositions[move.m_DesiredPosition.index()]; 
-            GameFigure* movedFigure_ptr =  m_BoardPositions[move.m_PiecePosition.index()];
-            if(capturedFigure_ptr){
-                auto capturedFigure_IT = std::find(m_Figures.begin(), m_Figures.end(), *capturedFigure);
-                capturedFigure = std::move(*capturedFigure_IT);
-                m_Figures.erase(capturedFigure_IT);
-            }
-            movedFigure_ptr->setPosition(move.m_DesiredPosition);
+            GameFigure** capturedFigure_ptr = &m_BoardPositions[move.m_DesiredPosition.index()]; 
+            GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
 
-            capturedFigure_ptr = movedFigure_ptr;
-            movedFigure_ptr = nullptr;
+            capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+
             break;
         }
         case EN_PASSANT:{
+            int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
+            Position capturedFigurePosition = Position(move.m_DesiredPosition.x, move.m_DesiredPosition.y - movementDirection);
+            GameFigure** capturedFigure_ptr = &m_BoardPositions[capturedFigurePosition.index()];
+            GameFigure** movedFigure_ptr = &m_BoardPositions[move.m_PiecePosition.index()];
 
+            capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
             break;
         }
         case CASTEL:{
             bool shortCastle = (move.getXOffSet() > 0); 
             Position rook_Position = (shortCastle) ? Position(7, move.m_PiecePosition.y): Position(0, move.m_PiecePosition.y);
             Position rook_DesiredPosition = (shortCastle) ? Position(move.m_DesiredPosition.x -1, move.m_PiecePosition.y) : Position(move.m_DesiredPosition.x+1, move.m_PiecePosition.y);
-            GameFigure* moved_King = m_BoardPositions[move.m_PiecePosition.index()];
-            GameFigure* moved_Rook = m_BoardPositions[rook_Position.index()];
+            GameFigure** moved_King = &m_BoardPositions[move.m_PiecePosition.index()];
+            GameFigure** moved_Rook = &m_BoardPositions[rook_Position.index()];
 
-            moved_King->setPosition(move.m_DesiredPosition);
-            moved_Rook->setPosition(rook_DesiredPosition);
+            (*moved_King)->setPosition(move.m_DesiredPosition);
+            (*moved_Rook)->setPosition(rook_DesiredPosition);
 
-            m_BoardPositions[move.m_DesiredPosition.index()] = moved_King;
-            moved_King=nullptr;
+            m_BoardPositions[move.m_DesiredPosition.index()] = *moved_King;
+            (*moved_King)=nullptr;
 
-            m_BoardPositions[rook_DesiredPosition.index()] = moved_Rook;
-            moved_Rook=nullptr;
+            m_BoardPositions[rook_DesiredPosition.index()] = *moved_Rook;
+            (*moved_Rook)=nullptr;
             break;
         }
         case PROMOTING:
+            GameFigure** capturedFigure_ptr = &m_BoardPositions[move.m_DesiredPosition.index()]; 
+            GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
+
+            capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+
+            //Promotin Logic -> m_Figure && m_BoardPositions updaten!!! Neue Figur konstrukten
+
             break;
         }
 
         return capturedFigure;
-        //nicht vergessen raus figuren auch aus vector entfernt werden müssen 
+    }
+
+    std::optional<GameFigure> Board::editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
+        std::optional<GameFigure> capturedFigure;
+
+        if(capturedFigure_ptr){
+            auto capturedFigure_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
+            if(capturedFigure_IT != m_Figures.end()){
+                capturedFigure = std::move(*capturedFigure_IT);
+                m_Figures.erase(capturedFigure_IT);
+            }
+        }
+        (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
+
+        (*capturedFigure_ptr) = nullptr;
+        m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
+        (*movedFigure_ptr) = nullptr;
+
+        return capturedFigure;
     }
 
     MoveResult Board::isMoveLegal(const Move& move) const{

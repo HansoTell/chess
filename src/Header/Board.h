@@ -45,6 +45,7 @@ namespace chess
 
         void boardinit(const json& gameConfig);
         void updateGameState(std::optional<GameFigure>& capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
+        std::optional<GameFigure> editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
 
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(Color color) const;
