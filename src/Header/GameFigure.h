@@ -46,5 +46,5 @@ namespace chess{
     };
 
 
-    GameFigure GameFigureFactory(const std::string& type, Color color, Position& pos);
+    GameFigure GameFigureFactory(FigureType figureType, Color color, Position& pos);
 }

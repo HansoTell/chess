@@ -107,15 +107,33 @@ namespace chess{
     void Board::boardinit(const json& gameConfig){
 
         auto& figure_position_map= gameConfig["figure_positions"];
-        
-        for(auto&[figure_Type, data_Figures] : figure_position_map.items()){
-            for(auto& data_figure : data_Figures){
-                int posX = data_figure[1].get<int>();
-                int posY = data_figure[2].get<int>();
+
+        for(auto& data_Figures : figure_position_map){
+
+            FigureType figure_Type = data_Figures["FigureType"].get<FigureType>();
+
+            //updaten auf methode für besser ist nur krampf template oder halt json::bacsic oder so
+            //Ganz groß nochmal auf x und y koordinaten schauen sind anscheinende vertauscht. Sind sie bei allem vertauscht??
+            for(auto& figure_Position_White : data_Figures["WHITE"]){
+
+                int posY = figure_Position_White[0].get<int>();
+                int posX = figure_Position_White[1].get<int>();
                 Position piecePosition(posX, posY);
-                
-                int colorInt = data_figure[0].get<int>();
-                Color pieceColor = static_cast<Color>(colorInt);
+                Color pieceColor = WHITE;
+
+                GameFigure figure = GameFigureFactory(figure_Type, pieceColor, piecePosition);
+
+                m_Figures.push_back(std::move(figure));
+                m_BoardPositions[posX + posY*boardWidth] = &m_Figures.back();
+            }
+
+            for(auto& figure_Position_Black : data_Figures["BLACK"]){
+
+                int posY = figure_Position_Black[0].get<int>();
+                int posX = figure_Position_Black[1].get<int>();
+                Position piecePosition(posX, posY);
+                Color pieceColor = BLACK;
+
                 GameFigure figure = GameFigureFactory(figure_Type, pieceColor, piecePosition);
 
                 m_Figures.push_back(std::move(figure));
