@@ -13,7 +13,6 @@ namespace chess{
     GameFigure::GameFigure(const GameFigure& other) : 
         m_Color(other.m_Color), 
         m_Position(other.m_Position), 
-        m_FigureChar(other.m_FigureChar), 
         m_MovmentLogic(other.m_MovmentLogic ? other.m_MovmentLogic->clone() : nullptr)
         {}
     GameFigure::GameFigure(GameFigure&& other) : 
@@ -28,7 +27,6 @@ namespace chess{
         other.m_Color = WHITE;
         other.m_Position.x = 0;
         other.m_Position.y = 0;
-        other.m_FigureChar = 'F';
     }
 
     GameFigure GameFigureFactory(FigureType figureType, Color Color, Position& pos){

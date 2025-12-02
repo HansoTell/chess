@@ -112,33 +112,23 @@ namespace chess{
 
             FigureType figure_Type = data_Figures["FigureType"].get<FigureType>();
 
-            //updaten auf methode für besser ist nur krampf template oder halt json::bacsic oder so
-            //Ganz groß nochmal auf x und y koordinaten schauen sind anscheinende vertauscht. Sind sie bei allem vertauscht??
-            for(auto& figure_Position_White : data_Figures["WHITE"]){
+            addFigureOffJson(data_Figures["WHITE"], figure_Type, WHITE);
+            addFigureOffJson(data_Figures["BLACK"], figure_Type, BLACK);
+        }
+    }
 
-                int posX = figure_Position_White[0].get<int>();
-                int posY = figure_Position_White[1].get<int>();
-                Position piecePosition(posX, posY);
-                Color pieceColor = WHITE;
+    void Board::addFigureOffJson(const json& posData, FigureType figureType, Color color){
 
-                GameFigure figure = GameFigureFactory(figure_Type, pieceColor, piecePosition);
+        for(auto& figure_Position_Black : posData){
 
-                m_Figures.push_back(std::move(figure));
-                m_BoardPositions[posX + posY*boardWidth] = &m_Figures.back();
-            }
+            int posX = figure_Position_Black[0].get<int>();
+            int posY = figure_Position_Black[1].get<int>();
+            Position piecePosition(posX, posY);
 
-            for(auto& figure_Position_Black : data_Figures["BLACK"]){
+            GameFigure figure = GameFigureFactory(figureType, color, piecePosition);
 
-                int posX = figure_Position_Black[0].get<int>();
-                int posY = figure_Position_Black[1].get<int>();
-                Position piecePosition(posX, posY);
-                Color pieceColor = BLACK;
-
-                GameFigure figure = GameFigureFactory(figure_Type, pieceColor, piecePosition);
-
-                m_Figures.push_back(std::move(figure));
-                m_BoardPositions[posX + posY*boardWidth] = &m_Figures.back();
-            }
+            m_Figures.push_back(std::move(figure));
+            m_BoardPositions[posX + posY*boardWidth] = &m_Figures.back();
         }
     }
 
@@ -217,8 +207,18 @@ namespace chess{
             GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
 
             capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+            Position promotionPosition = move.m_DesiredPosition;
 
-            //Promotin Logic -> m_Figure & m_BoardPositions updaten!!! Neue Figur konstrukten
+            GameFigure promotedFigure = GameFigureFactory(promotedFigureType.value(), move.m_PlayerColor, promotionPosition);
+
+            auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
+            if(deltePawn_IT != m_Figures.end()){
+                removeOldThreats(*capturedFigure_ptr);
+                m_Figures.erase(deltePawn_IT);
+            }
+
+            m_Figures.push_back(std::move(promotedFigure));
+            (*capturedFigure_ptr) = &m_Figures.back();
 
             break;
         }
