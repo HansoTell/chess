@@ -6,8 +6,7 @@ namespace chess{
     }
 
     void ASCIIPrinter::printBoard(const BoardView& BoardView)const{
-        std::cout << "   | A  | B  | C  | D  | E  | F  | G  | H  |" << "\n";
-        std::cout << "-----------------------------------------------" << "\n";
+        printHeader();
         for(int i = 0; i<boardWidth;i++){
             std::cout << i+1 << " "; 
             for(int j = 0; j<boardWidth;j++){
@@ -15,8 +14,7 @@ namespace chess{
                 Position curr_pos(i, j);
                 const GameFigure* toprintFigure = BoardView.getFigureAt(curr_pos); 
                 if(toprintFigure){
-                    //Später ändern wenn FigurePrinter implementiert
-                    toprintFigure->printChar();
+                    printFigure(toprintFigure->getFigureType(), toprintFigure->getColor());
                 }else{
                     std::cout << "  ";
                 }
@@ -24,6 +22,47 @@ namespace chess{
             std::cout << " |  " << i+1 <<"\n";
             std::cout << "-----------------------------------------------" << "\n";
         }
+        printFooter();
+    }
+
+
+    void ASCIIPrinter::printHeader() const {
         std::cout << "   | A  | B  | C  | D  | E  | F  | G  | H  |" << "\n";
+        std::cout << "-----------------------------------------------" << "\n";
+    }
+
+    void ASCIIPrinter::printFooter() const {
+        std::cout << "   | A  | B  | C  | D  | E  | F  | G  | H  |" << "\n";
+    }
+
+    void ASCIIPrinter::printFigure(FigureType figureType, Color color) const {
+        if(color == WHITE){
+            std::cout << 'W';
+        }else{
+            std::cout << 'B';
+        }
+
+        switch (figureType)
+        {
+        case PAWN:
+            std::cout << 'P';
+            break;
+        case ROOK:
+            std::cout << 'R';
+            break;
+        case BISHOP:
+            std::cout << 'B';
+            break;
+        case KNIGHT:
+            std::cout << 'H';
+            break;
+        case QUEEN:
+            std::cout << 'Q';
+            break;
+        case KING:
+            std::cout << 'K';
+            break;
+        }
+
     }
 }

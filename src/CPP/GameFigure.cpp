@@ -3,9 +3,8 @@
 
 namespace chess{
 
-    GameFigure::GameFigure(Color color, char figureChar, Position& pos, std::unique_ptr<MovementLogic> MovementLogic, FigureType figureType, MovementTypes movementType): 
+    GameFigure::GameFigure(Color color, Position& pos, std::unique_ptr<MovementLogic> MovementLogic, FigureType figureType, MovementTypes movementType): 
         m_Color(color), 
-        m_FigureChar(figureChar), 
         m_Position(pos), 
         m_MovmentLogic(std::move(MovementLogic)), 
         m_FigureType(figureType), 
@@ -32,28 +31,16 @@ namespace chess{
         other.m_FigureChar = 'F';
     }
 
-    void GameFigure::printColor() const{
-        if(m_Color == Color::WHITE){
-            std::cout << 'W';
-        }else{
-            std::cout << 'B';
-        }
-    }
-    void GameFigure::printChar() const{
-        printColor();
-        std::cout <<m_FigureChar;
-    }
-
     GameFigure GameFigureFactory(const std::string& type, Color Color, Position& pos){
-        if(type == "PAWN") return GameFigure(Color, 'P', pos, std::make_unique<PawnMovement>(), PAWN, JUMPING);
-        else if(type=="ROOK") return GameFigure(Color, 'R', pos, std::make_unique<RookMovement>(), ROOK, SLIDING);
-        else if(type=="BISHOP") return GameFigure(Color, 'B', pos, std::make_unique<BishopMovement>(), BISHOP, SLIDING);
-        else if(type=="HORSE") return GameFigure(Color, 'H', pos, std::make_unique<KnightMovement>(), KNIGHT, JUMPING);
-        else if(type=="QUEEN") return GameFigure(Color, 'Q', pos, std::make_unique<QueenMovement>(), QUEEN, SLIDING);
-        else if(type=="KING") return GameFigure(Color, 'K', pos, std::make_unique<KingMovement>(), KING, JUMPING);
+        if(type == "PAWN") return GameFigure(Color, pos, std::make_unique<PawnMovement>(), PAWN, JUMPING);
+        else if(type=="ROOK") return GameFigure(Color, pos, std::make_unique<RookMovement>(), ROOK, SLIDING);
+        else if(type=="BISHOP") return GameFigure(Color, pos, std::make_unique<BishopMovement>(), BISHOP, SLIDING);
+        else if(type=="HORSE") return GameFigure(Color, pos, std::make_unique<KnightMovement>(), KNIGHT, JUMPING);
+        else if(type=="QUEEN") return GameFigure(Color, pos, std::make_unique<QueenMovement>(), QUEEN, SLIDING);
+        else if(type=="KING") return GameFigure(Color, pos, std::make_unique<KingMovement>(), KING, JUMPING);
         else{
             std::cout << "Kein Valide Figur eingegeben im json dokument" << "\n";
-            return GameFigure(Color, 'F', pos, std::make_unique<RookMovement>(), QUEEN, JUMPING);
+            return GameFigure(Color, pos, std::make_unique<RookMovement>(), QUEEN, JUMPING);
         }
     }
 }

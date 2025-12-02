@@ -11,7 +11,7 @@ namespace chess{
         Position(const Position& other) = default;
         Position(Position&& other);
         Position& operator=(const Position& other) = default;
-        bool operator==(const Position& other) { return this->x == other.x && this->y == other.y; }
+        bool operator==(const Position& other) const { return this->x == other.x && this->y == other.y; }
         int index() const { return x + y * boardWidth; }
     };
 

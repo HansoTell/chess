@@ -22,5 +22,10 @@ namespace chess{
     public:
         FigureType getPromotionFigure() const override;
         void printBoard(const BoardView& BoardView) const override;
+    private:
+        void printHeader() const;
+        void printFooter() const;
+        void printFigure(FigureType figureType, Color color) const ;
     };
+
 }

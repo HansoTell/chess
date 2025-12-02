@@ -68,7 +68,7 @@ namespace chess{
             removeOldThreats(capturedFigure_ptr);
         }        
 
-        if(movedFigure->getFigureType() == JUMPING){
+        if(movedFigure->getMovementType() == JUMPING){
             removeOldThreats(movedFigure);
             refreshThreats(movedFigure);
         }
@@ -122,26 +122,6 @@ namespace chess{
                 m_BoardPositions[posX + posY*boardWidth] = &m_Figures.back();
             }
         }
-    }
-
-    void Board::printBoard() const {
-        std::cout << "   | A  | B  | C  | D  | E  | F  | G  | H  |" << "\n";
-        std::cout << "-----------------------------------------------" << "\n";
-        for(int i = 0; i<boardWidth;i++){
-            std::cout << i+1 << " "; 
-            for(int j = 0; j<boardWidth;j++){
-                std::cout << " | ";
-                GameFigure* toprintFigure = m_BoardPositions[i+j*boardWidth];
-                if(toprintFigure){
-                    m_BoardPositions[i+j*boardWidth]->printChar();
-                }else{
-                    std::cout << "  ";
-                }
-            }
-            std::cout << " |  " << i+1 <<"\n";
-            std::cout << "-----------------------------------------------" << "\n";
-        }
-        std::cout << "   | A  | B  | C  | D  | E  | F  | G  | H  |" << "\n";
     }
 
     bool Board::makeMove(const Move& move){
@@ -283,6 +263,10 @@ namespace chess{
         }
 
         std::cout << "No King found kinda weird" << "\n";
+        return false;
+    }
+
+    bool Board::wouldBeInCheck() const{
         return false;
     }
 }

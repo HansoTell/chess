@@ -3,6 +3,10 @@
 
 namespace chess{
     namespace AttackTabels{
+        std::array<std::pair<int, int>, 4> StraightSteps = {std::pair(1,0), {-1,0}, {0,1}, {0,-1}};
+        std::array<std::pair<int, int>, 4> DiagonalSteps = {std::pair(1,1), {1,-1}, {-1,-1}, {-1,1}};
+
+
         std::array<std::vector<Position>, 64> knightAttacks;
         std::array<std::vector<Position>, 64> kingAttacks;
     
@@ -17,7 +21,7 @@ namespace chess{
             for(int i = 0; i < attackTabel.size(); i++){
                 int x = i / 8;
                 int y = i % 8;
-                for(auto[dx, dy]& : offsetTabel){
+                for(auto& [dx, dy] : offsetTabel){
                     int offsetX = x + dx;
                     int offsetY = y + dy;
                     if(offsetX >= 0 && offsetX < 8 && offsetY >= 0 && offsetY < 8)

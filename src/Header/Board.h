@@ -31,7 +31,7 @@ namespace chess
         Board(Board& other) = delete;
         ~Board() = default;
     public:
-        void printBoard() const;
+        void printBoard() const { m_BoardPrinter->printBoard(m_BoardView); }
         bool makeMove(const Move& move);
         bool isCheckmate(Color playerColor) const;
 

@@ -23,5 +23,9 @@ add_executable(chess
     src/CPP/Move.cpp
     src/CPP/BoardView.cpp
     src/CPP/MovmentLogic.cpp
+    src/CPP/Color.cpp
+    src/CPP/AttackTabels.cpp
+    src/CPP/BoardPrinter.cpp
+    src/CPP/GameState.cpp
 )
 

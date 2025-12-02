@@ -3,7 +3,7 @@
 
 namespace chess{
 
-    namespace MovementTypes{
+    namespace MoveChecks{
         static bool isStraigt(const Move& Move){
             int x_OffSet = Move.getXOffSet();
             int y_OffSet = Move.getYOffSet();
@@ -92,12 +92,12 @@ namespace chess{
     namespace ThreatTypes{
         template<typename F, size_t T>
         void getSlidingThreats(const BoardView& BoardView, const Position& figPos, std::array<std::pair<int, int> , T> steps, F callback){
-            for(auto[dx, dy]& : steps){
+            for(auto& [dx, dy] : steps){
                 Position newPos(figPos.x+dx, figPos.y+dy);
                 while(newPos.x >=0 && newPos.x <8 && newPos.y >=0 && newPos.y<8 && !BoardView.getFigureAt(newPos)){
                     callback(newPos);
-                    newPos+=dx;
-                    newPos+=dy;
+                    newPos.x+=dx;
+                    newPos.y+=dy;
                 }
                 if(newPos.x >=0 && newPos.x <8 && newPos.y >=0 && newPos.y<8)
                     callback(newPos);
@@ -106,46 +106,46 @@ namespace chess{
     }
 
     MoveResult RookMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const {
-        if(MovementTypes::isStraigt(move)){
+        if(MoveChecks::isStraigt(move)){
 
             int stepX = (move.getXOffSet() == 0) ? 0 : (move.getXOffSet() > 0 ? 1 : -1);
             int stepY = (move.getYOffSet() == 0) ? 0 : (move.getYOffSet() > 0 ? 1 : -1);
 
-            return { MovementTypes::isPathClear(move, BoardView, stepX, stepY), NORMAL };
+            return { MoveChecks::isPathClear(move, BoardView, stepX, stepY), NORMAL };
         }
 
         return false;
     }
     MoveResult BishopMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const {
-        if(MovementTypes::isDiagonal(move)){
+        if(MoveChecks::isDiagonal(move)){
 
             int stepX = (move.getXOffSet() > 0) ? 1 : -1;
             int stepY = (move.getYOffSet() > 0) ? 1 : -1;
 
-            return { MovementTypes::isPathClear(move, BoardView, stepX, stepY), NORMAL };
+            return { MoveChecks::isPathClear(move, BoardView, stepX, stepY), NORMAL };
         }
 
         return false;
     }
-    MoveResult KnightMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const { return { MovementTypes::isKnightMovement(move), NORMAL }; }
+    MoveResult KnightMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const { return { MoveChecks::isKnightMovement(move), NORMAL }; }
     MoveResult KingMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const { 
 
-        if(MovementTypes::isKingMovement(move))
+        if(MoveChecks::isKingMovement(move))
             return { true, NORMAL };
 
-        if(MovementTypes::isCastle(move, BoardView, GameState))
+        if(MoveChecks::isCastle(move, BoardView, GameState))
             return {true, CASTEL};
         
 
         return false; 
     }
     MoveResult QueenMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const { 
-        if(MovementTypes::isStraigt(move) || MovementTypes::isDiagonal(move)){
+        if(MoveChecks::isStraigt(move) || MoveChecks::isDiagonal(move)){
 
             int stepX = (move.getXOffSet() == 0) ? 0 : (move.getXOffSet() > 0 ? 1 : -1);
             int stepY = (move.getYOffSet() == 0) ? 0 : (move.getYOffSet() > 0 ? 1 : -1);
 
-            return { MovementTypes::isPathClear(move, BoardView, stepX, stepY), NORMAL };
+            return { MoveChecks::isPathClear(move, BoardView, stepX, stepY), NORMAL };
         }
 
         return false;
@@ -161,9 +161,9 @@ namespace chess{
             return false;
 
 
-        MoveType moveType = (MovementTypes::isPromoting(move)) ? PROMOTING : NORMAL; 
+        MoveType moveType = (MoveChecks::isPromoting(move)) ? PROMOTING : NORMAL; 
 
-        if(MovementTypes::isStraigt(move) && abs(move.getYOffSet()) <= 2){
+        if(MoveChecks::isStraigt(move) && abs(move.getYOffSet()) <= 2){
             int startPosition = (move.m_PlayerColor == WHITE) ? 1 : 7;
             if(abs(move.getYOffSet() == 2) && (startPosition != move.m_PiecePosition.y))
                return false;
@@ -174,14 +174,14 @@ namespace chess{
             Move moveCopy = move;
             moveCopy.m_DesiredPosition.y += stepY;
 
-            return { MovementTypes::isPathClear(moveCopy, BoardView, stepX, stepY), moveType};
+            return { MoveChecks::isPathClear(moveCopy, BoardView, stepX, stepY), moveType};
         }
-        if(MovementTypes::isDiagonal(move) && abs(move.getYOffSet() == 1)){
+        if(MoveChecks::isDiagonal(move) && abs(move.getYOffSet() == 1)){
             if(BoardView.getFigureAt(move.m_DesiredPosition))
                 return {isDiagonalPathClear(move, BoardView), moveType};
             
             
-            if(MovementTypes::isEnPassant(move, BoardView))
+            if(MoveChecks::isEnPassant(move, BoardView))
                 return {true, EN_PASSANT };
         }
 
@@ -190,12 +190,14 @@ namespace chess{
 
 
     std::vector<Position> RookMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
-        std::vector<Position> threats(14*sizeof(Position));
+        std::vector<Position> threats;
+        threats.reserve(14*sizeof(Position));
         ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::StraightSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
         return threats;
     }
     std::vector<Position> BishopMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
-        std::vector<Position> threats(14*sizeof(Position));
+        std::vector<Position> threats;
+        threats.reserve(14*sizeof(Position));
         ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::DiagonalSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
         return threats;
     }
@@ -208,14 +210,17 @@ namespace chess{
         return threatendSquares;
     }
     std::vector<Position> QueenMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
-        std::vector<Position> threats(27*sizeof(Position));
+        std::vector<Position> threats;
+        threats.reserve(27*sizeof(Position));
         ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::StraightSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
         ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::DiagonalSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
         return threats;
     }
     std::vector<Position> PawnMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
         int direction = (color == WHITE) ? 1 : -1;
-        std::vector<Position> threats(4*sizeof(Position));
+        std::vector<Position> threats;
+        threats.reserve(4*sizeof(Position));
+
         threats.emplace_back(figPos.x+1, figPos.y+direction);
         threats.emplace_back(figPos.x-1, figPos.y+direction);
 
@@ -234,5 +239,6 @@ namespace chess{
                 threats.emplace_back(potentialPawnPos2);
             }
         }
+        return threats;
     }
 }
