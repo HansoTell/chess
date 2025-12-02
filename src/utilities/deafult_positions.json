@@ -2,12 +2,13 @@
 {
     "figure_positions": 
     {
-        "ROOK" : [[0,0,0], [0,0,7], [1,7,7], [1,7,0]],
-        "BISHOP": [[0,0,2], [0,0,5], [1,7,5], [1,7,2]],
-        "HORSE" : [[0,0,1], [0,0,6], [1,7,6], [1,7,1]],
-        "QUEEN" : [[0,0,3], [1, 7, 3]],
-        "KING" : [[0,0,4], [1,7,4]],
-        "PAWN" : [[0,1,0], [0,1,1],[0,1,2], [0,1,3], [0,1,4], [0,1,5], [0,1,6], [0,1,7], [1,6,0], [1,6,1], [1,6,2], [1,6,3], [1,6,4], [1,6,5], [1,6,6], [1,6,7]]
+        "ROOK" : [{"FigureType" : "ROOK"}, [[{"COLOR" : "WHITE"}, {"POSITION" : [[0,0], [7,0]]}], [{"COLOR" : "BLACK"}, {"POSITION" : [[7,7], [0,7]]}]]],
+        "BISHOP" : [{"FigureType" : "BISHOP"}, [[{"COLOR" : "WHITE"}, {"POSITION" : [[2,0], [5,0]]}], [{"COLOR" : "BLACK"}, {"POSITION" : [[5,7], [2,7]]}]]],
+        "KNIGHT" : [{"FigureType" : "KNIGHT"}, [[{"COLOR" : "WHITE"}, {"POSITION" : [[1,0], [6,0]]}], [{"COLOR" : "BLACK"}, {"POSITION" : [[6,7], [1,7]]}]]],
+        "QUEEN" : [{"FigureType" : "QUEEN"}, [[{"COLOR" : "WHITE"}, {"POSITION" : [[3,0]]}], [{"COLOR" : "BLACK"}, {"POSITION" : [[3,7]]}]]],
+        "KING" : [{"FigureType" : "KING"}, [[{"COLOR" : "WHITE"}, {"POSITION" : [[4,0]]}], [{"COLOR" : "BLACK"}, {"POSITION" : [[4,7]]}]]],
+        "PAWN" : [{"FigureType" : "PAWN"}, [[{"COLOR" : "WHITE"}, {"POSITION" : [[0,1], [1,1], [2,1], [3,1], [4,1], [5,1], [6,1], [7,1]]}],
+                 [{"COLOR" : "BLACK"}, {"POSITION" : [[0,6], [1,6], [2, 6], [3,6], [4,6], [5,6], [6,6], [7,6]]}]]]
     }
     
 }

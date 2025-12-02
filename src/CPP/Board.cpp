@@ -132,12 +132,13 @@ namespace chess{
             return false;
         }
 
+        std::optional<FigureType> promotedFigureType;
         if(moveResult.m_MoveType == PROMOTING){
-            //Welche figur man will erfragen --> neue klasse die ausgaben macht und sich um sowas kümmert --> eventuell wird sich das aber auch noch erledigen wegen spielablauf deisgn
+            promotedFigureType = m_BoardPrinter->getPromotionFigure();
         }
 
         FigureType movedFigureType = m_BoardView.getFigureAt(move.m_PiecePosition)->getFigureType();
-        auto capturedFigure = executeMove(move, moveResult);
+        auto capturedFigure = executeMove(move, moveResult, promotedFigureType);
         updateGameState(capturedFigure, move, moveResult.m_MoveType, movedFigureType);
 
         return true;
@@ -155,7 +156,7 @@ namespace chess{
             m_GameState.toggleKingInCheck(opposite(move.m_PlayerColor));
     }
 
-    std::optional<GameFigure> Board::executeMove(const Move& move, MoveResult moveResult){
+    std::optional<GameFigure> Board::executeMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType){
         std::optional<GameFigure> capturedFigure;
         switch (moveResult.m_MoveType.value())
         {

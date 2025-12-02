@@ -53,7 +53,7 @@ namespace chess
         bool isInCheck(Color color) const;
         bool wouldBeInCheck() const;
 
-        std::optional<GameFigure> executeMove(const Move& move, MoveResult moveresult);
+        std::optional<GameFigure> executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);
     };
 }
 
