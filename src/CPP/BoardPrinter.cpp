@@ -7,11 +7,11 @@ namespace chess{
 
     void ASCIIPrinter::printBoard(const BoardView& BoardView)const{
         printHeader();
-        for(int i = 0; i<boardWidth;i++){
-            std::cout << i+1 << " "; 
-            for(int j = 0; j<boardWidth;j++){
+        for(int y = 0; y<boardWidth; y++){
+            std::cout << y+1 << " "; 
+            for(int x = 0; x<boardWidth;x++){
                 std::cout << " | ";
-                Position curr_pos(i, j);
+                Position curr_pos(x, y);
                 const GameFigure* toprintFigure = BoardView.getFigureAt(curr_pos); 
                 if(toprintFigure){
                     printFigure(toprintFigure->getFigureType(), toprintFigure->getColor());
@@ -19,7 +19,7 @@ namespace chess{
                     std::cout << "  ";
                 }
             }
-            std::cout << " |  " << i+1 <<"\n";
+            std::cout << " |  " << y+1 <<"\n";
             std::cout << "-----------------------------------------------" << "\n";
         }
         printFooter();

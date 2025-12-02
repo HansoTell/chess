@@ -116,8 +116,8 @@ namespace chess{
             //Ganz groß nochmal auf x und y koordinaten schauen sind anscheinende vertauscht. Sind sie bei allem vertauscht??
             for(auto& figure_Position_White : data_Figures["WHITE"]){
 
-                int posY = figure_Position_White[0].get<int>();
-                int posX = figure_Position_White[1].get<int>();
+                int posX = figure_Position_White[0].get<int>();
+                int posY = figure_Position_White[1].get<int>();
                 Position piecePosition(posX, posY);
                 Color pieceColor = WHITE;
 
@@ -129,8 +129,8 @@ namespace chess{
 
             for(auto& figure_Position_Black : data_Figures["BLACK"]){
 
-                int posY = figure_Position_Black[0].get<int>();
-                int posX = figure_Position_Black[1].get<int>();
+                int posX = figure_Position_Black[0].get<int>();
+                int posY = figure_Position_Black[1].get<int>();
                 Position piecePosition(posX, posY);
                 Color pieceColor = BLACK;
 
