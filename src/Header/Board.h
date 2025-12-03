@@ -41,18 +41,19 @@ namespace chess
         void gameStateInit(const json& gameConfig);
 
         void threatendSquaresInit();
-        void updateThreatendSquares(std::optional<GameFigure>& capturedFigure, const Move& move);
-        void removeOldThreats(GameFigure* figure);
-        void refreshThreats(GameFigure* figure);
+        void updateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching = false);
+        void removeOldThreats(const GameFigure* figure, bool caching);
+        template<typename F>
+        void refreshThreats(GameFigure* figure, F callback, bool caching);
 
         void boardinit(const json& gameConfig);
         void addFigureOffJson(const json& posData, FigureType figureType, Color color);
-        void updateGameState(std::optional<GameFigure>& capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
+        void updateGameState(const GameFigure* capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
         std::optional<GameFigure> editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
 
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(Color color) const;
-        bool wouldBeInCheck() const;
+        bool wouldBeInCheck(Color color) const;
 
         std::optional<GameFigure> executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);
     };

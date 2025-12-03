@@ -27,7 +27,7 @@ namespace chess{
         void setARookMoved(Color color);
 
     public:
-        GameState() { m_BlackThreatendSquares.reserve(64 * sizeof(Position)); m_WhiteThreatendSquares.reserve(64*sizeof(Position)); }
+        GameState() { m_BlackThreatendSquares.reserve(64); m_WhiteThreatendSquares.reserve(64); }
 
         bool hasKingMoved(Color color) const { return (color == WHITE) ? m_HasWhiteKingMoved : m_HasBlackKingMoved; }
         bool hasHRookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteHRookMoved : m_HasBlackHRookMoved; }

@@ -191,13 +191,13 @@ namespace chess{
 
     std::vector<Position> RookMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
         std::vector<Position> threats;
-        threats.reserve(14*sizeof(Position));
+        threats.reserve(14);
         ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::StraightSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
         return threats;
     }
     std::vector<Position> BishopMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
         std::vector<Position> threats;
-        threats.reserve(14*sizeof(Position));
+        threats.reserve(14);
         ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::DiagonalSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
         return threats;
     }
@@ -211,7 +211,7 @@ namespace chess{
     }
     std::vector<Position> QueenMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
         std::vector<Position> threats;
-        threats.reserve(27*sizeof(Position));
+        threats.reserve(27);
         ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::StraightSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
         ThreatTypes::getSlidingThreats(BoardView, figPos, AttackTabels::DiagonalSteps, [&](Position threatPos){ threats.emplace_back(threatPos); });
         return threats;
@@ -219,7 +219,7 @@ namespace chess{
     std::vector<Position> PawnMovement::getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const{
         int direction = (color == WHITE) ? 1 : -1;
         std::vector<Position> threats;
-        threats.reserve(4*sizeof(Position));
+        threats.reserve(4);
 
         threats.emplace_back(figPos.x+1, figPos.y+direction);
         threats.emplace_back(figPos.x-1, figPos.y+direction);
