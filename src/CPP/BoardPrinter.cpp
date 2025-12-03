@@ -2,7 +2,27 @@
 
 namespace chess{
     FigureType ASCIIPrinter::getPromotionFigure() const{
+        std::cout << "Enter Figure you want to promote to: " << "\n";
+        std::cout << "QUEEN" << "\n";
+        std::cout << "ROOK" << "\n";
+        std::cout << "KNIGHT" << "\n";
+        std::cout << "BISHOP" << "\n";
+        
+        while(true){
 
+            std::string figureType_str;
+            std::cin >> figureType_str;
+
+            if(figureType_str == "QUEEN"){
+                return QUEEN;
+            } else if( figureType_str == "ROOK" ){
+                return ROOK;
+            } else if(  figureType_str == "KNIGHT" ){
+                return KNIGHT;
+            }else if( figureType_str == "BISHOP" ){
+                return BISHOP;
+            }
+        }
     }
 
     void ASCIIPrinter::printBoard(const BoardView& BoardView)const{
@@ -24,7 +44,6 @@ namespace chess{
         }
         printFooter();
     }
-
 
     void ASCIIPrinter::printHeader() const {
         std::cout << "   | A  | B  | C  | D  | E  | F  | G  | H  |" << "\n";
