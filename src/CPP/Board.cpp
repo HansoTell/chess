@@ -112,6 +112,8 @@ namespace chess{
                 refreshThreats(figure_ptr, addToAddedThreats, caching);
             }
         }
+
+        return cachedThreats;
     }
 
     template<typename F>
@@ -254,7 +256,7 @@ namespace chess{
 
             auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
             if(deltePawn_IT != m_Figures.end()){
-                removeOldThreats(*capturedFigure_ptr, [&](){}, false);
+                removeOldThreats(*capturedFigure_ptr, [&](const GameFigure* figure){}, false);
                 m_Figures.erase(deltePawn_IT);
             }
 
