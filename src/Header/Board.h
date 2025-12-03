@@ -14,10 +14,12 @@
 #include "GameState.h"
 #include "MoveResult.h"
 #include "BoardPrinter.h"
+#include "CachedThreats.h"
 
 using json = nlohmann::json;
 namespace chess
 {
+
     class Board
     {
     private:
@@ -41,8 +43,9 @@ namespace chess
         void gameStateInit(const json& gameConfig);
 
         void threatendSquaresInit();
-        void updateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching = false);
-        void removeOldThreats(const GameFigure* figure, bool caching);
+        CachedThreats updateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching = false);
+        template<typename F>
+        void removeOldThreats(const GameFigure* figure, F callback,  bool caching);
         template<typename F>
         void refreshThreats(GameFigure* figure, F callback, bool caching);
 
@@ -53,7 +56,7 @@ namespace chess
 
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(Color color) const;
-        bool wouldBeInCheck(Color color) const;
+        bool wouldBeInCheck(const Move& move);
 
         std::optional<GameFigure> executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);
     };

@@ -59,51 +59,48 @@ namespace chess{
         }
     }
 
-    void Board::updateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching){
+    CachedThreats Board::updateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching){
 
         //Müsste andere posi sein für cachen (move.m_piecePosition)
         GameFigure* movedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
 
-
-        //removed Threats müssen zuordnen können wem sie gehört haben iwiwe Tupel von GameFigure und Threatmap
-        //referesh threats nur wissen was wir hinzugefgt haben um zu wissen was wir entfernen müssen
-
-        std::vector<Position> addedThreatsWhite;
-        std::vector<Position> addedThreatsBlack;
-
-        std::vector<std::tuple<GameFigure*, std::vector<Position>>> removedThreatsWhite;
-        std::vector<std::tuple<GameFigure*, std::vector<Position>>> removedThreatsBlack;
+        CachedThreats cachedThreats;
 
         auto addToAddedThreats = [&](const GameFigure* figure)
-            {
-                if(figure->getColor() == WHITE){
-                    addedThreatsWhite.insert(addedThreatsWhite.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
-                }else{
-                    addedThreatsBlack.insert(addedThreatsBlack.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
-                }
-            };
+        {
+            if(figure->getColor() == WHITE){
+                cachedThreats.addedThreatsWhite.insert(cachedThreats.addedThreatsWhite.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
+            }else{
+                cachedThreats.addedThreatsBlack.insert(cachedThreats.addedThreatsBlack.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
+            }
+        };
+
+        auto addToRemovedThreats  = [&](const GameFigure* figure)
+        {
+            if(figure->getColor() == WHITE){
+                cachedThreats.removedThreatsWhite.emplace_back(figure, figure->getThreatendSquares());
+            }else{
+                cachedThreats.removedThreatsBlack.emplace_back(figure, figure->getThreatendSquares());
+            }
+        };
 
         if( caching ){
-            //keine ahnung nummer
-            addedThreatsWhite.reserve(64);
-            addedThreatsBlack.reserve(64);
+            cachedThreats.addedThreatsWhite.reserve(58);
+            cachedThreats.addedThreatsBlack.reserve(58);
 
-            removedThreatsWhite.reserve(64);
-            removedThreatsBlack.reserve(64);
+            cachedThreats.removedThreatsWhite.reserve(8);
+            cachedThreats.removedThreatsBlack.reserve(8);
         }
 
         if(capturedFigure)
-            //Müssen cachen und wieder in entsprechende allgemein threat map einfügen (nicht figure setzen, weil nicht updatet weil entfernt)
-            //eigentlich ja nur captureffigure.getThreats() cachen  --> insert removed positions
-            removeOldThreats(capturedFigure, caching);
+            removeOldThreats(capturedFigure, addToRemovedThreats, caching);
                 
-
         if(movedFigure->getMovementType() == JUMPING){
-            //cachen welche positions entfernt wurden aus allgemeiner threat map
-            removeOldThreats(movedFigure, caching);
+            removeOldThreats(movedFigure, addToRemovedThreats, caching);
             refreshThreats(movedFigure, addToAddedThreats, caching);
         }
 
+        //pass das für caching=true?
         for(auto& figure : m_Figures){
             if(figure.getMovementType() == SLIDING && 
                     (isInRay(move.m_PiecePosition, figure.getPosition()) 
@@ -111,17 +108,20 @@ namespace chess{
                     || (capturedFigure && isInRay(capturedFigure->getPosition(), figure.getPosition()))))
             {
                 GameFigure* figure_ptr = &figure;
-                //cachen welche entfernt wurden
-                removeOldThreats(figure_ptr, caching);
+                removeOldThreats(figure_ptr, addToRemovedThreats, caching);
                 refreshThreats(figure_ptr, addToAddedThreats, caching);
             }
         }
     }
 
-    void Board::removeOldThreats(const GameFigure* figure, bool caching){
+    template<typename F>
+    void Board::removeOldThreats(const GameFigure* figure, F callback , bool caching){
         std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
         const auto& old_Figure_Threats = figure->getThreatendSquares();
 
+        if( caching )
+            callback(figure);
+        
         for(const Position& threat : old_Figure_Threats){
             auto toRemoveThreat = std::find(ownColorThreats.cbegin(), ownColorThreats.cend(), threat);
             if(toRemoveThreat != ownColorThreats.end())
@@ -134,10 +134,10 @@ namespace chess{
         std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
 
         figure->updateThreats(m_BoardView);
-        if( caching ){
+        
+        if( caching )
             callback(figure);
-        }
-
+        
         ownColorThreats.insert(ownColorThreats.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
     }
 
@@ -176,6 +176,9 @@ namespace chess{
         if(!moveResult.m_IsMoveLegal){
             return false;
         }
+
+        if(wouldBeInCheck(move))
+            return false;
 
         std::optional<FigureType> promotedFigureType;
         if(moveResult.m_MoveType == PROMOTING){
@@ -251,7 +254,7 @@ namespace chess{
 
             auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
             if(deltePawn_IT != m_Figures.end()){
-                removeOldThreats(*capturedFigure_ptr, false);
+                removeOldThreats(*capturedFigure_ptr, [&](){}, false);
                 m_Figures.erase(deltePawn_IT);
             }
 
@@ -302,11 +305,6 @@ namespace chess{
         if(!moveResult.m_IsMoveLegal) 
             return false;
 
-        //checken ob eigens board in schach, simulation von neuen threatend positions müssen simuliert werden 
-        if(wouldBeInCheck(move.m_PlayerColor))
-            return false;
-
-            
         return moveResult;
     }
 
@@ -323,12 +321,14 @@ namespace chess{
         return false;
     }
 
-    bool Board::wouldBeInCheck(Color color) const{
+    bool Board::wouldBeInCheck(const Move& move){
+        //captured Figure heraus finden und speichern
 
-        //make and cache changes like update Thretendsquares()
-        //Probleme: Haben nicht die figur die captured wurde. --> Haben aber den MoveType Könnten daraus ableiten was die Captured figure ist und wo sie ist 
 
-        bool wouldbeChecked = isInCheck(color);
+        //nullptr noch wechseln
+        CachedThreats cachedThreats = updateThreatendSquares(nullptr, move, true);
+
+        bool wouldbeChecked = isInCheck(move.m_PlayerColor);
 
         //revert changes
 

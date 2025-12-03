@@ -41,7 +41,8 @@ namespace chess{
         const Position& getPosition() const { return m_Position; }
         void setPosition(Position pos) { m_Position = pos; }
         Color getColor() const { return m_Color; }
-        const std::vector<Position>& getThreatendSquares() const { return m_Threats; }
+        std::vector<Position>& getThreatendSquares()  { return m_Threats; }
+        const std::vector<Position> getThreatendSquares() const { return m_Threats; }
 
     };
 
