@@ -188,8 +188,12 @@ namespace chess{
         }
 
         FigureType movedFigureType = m_BoardView.getFigureAt(move.m_PiecePosition)->getFigureType();
-        auto capturedFigure = executeMove(move, moveResult, promotedFigureType);
-        const GameFigure* capturedFigure_ptr = (capturedFigure.has_value()) ? &capturedFigure.value() : nullptr;
+        auto capturedFigure_variant = executeMove(move, moveResult, promotedFigureType);
+        auto* capturedFigure = std::get_if<std::optional<GameFigure>>(&capturedFigure_variant);
+        if(!capturedFigure)
+            std::cout << "Error in execute Move result" << "\n";
+
+        const GameFigure* capturedFigure_ptr = (capturedFigure->has_value()) ? &capturedFigure->value() : nullptr;
         updateGameState(capturedFigure_ptr, move, moveResult.m_MoveType, movedFigureType);
 
         return true;
@@ -207,25 +211,35 @@ namespace chess{
             m_GameState.toggleKingInCheck(opposite(move.m_PlayerColor));
     }
 
-    std::optional<GameFigure> Board::executeMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType){
-        std::optional<GameFigure> capturedFigure;
+    Board::MoveChanges Board::executeMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType, bool caching){
+        //nochmal überlegen brauchen wir nicht captured figure gesondert? für update Threats methode??
+        MoveChanges moveChanges;
+        
+        if( moveResult.m_MoveType.value() == PROMOTING && caching )
+            moveResult.m_MoveType = NORMAL;
+
         switch (moveResult.m_MoveType.value())
         {
         case NORMAL:{
-            GameFigure** capturedFigure_ptr = &m_BoardPositions[move.m_DesiredPosition.index()]; 
             GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
+            GameFigure** capturedFigure_ptr = nullptr;
+            if( m_BoardPositions[move.m_DesiredPosition.index()] )
+                capturedFigure_ptr = &m_BoardPositions[move.m_DesiredPosition.index()]; 
 
-            capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+            moveChanges = editBoard(movedFigure_ptr, capturedFigure_ptr, move, caching);
 
             break;
         }
         case EN_PASSANT:{
             int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
-            Position capturedFigurePosition = Position(move.m_DesiredPosition.x, move.m_DesiredPosition.y - movementDirection);
-            GameFigure** capturedFigure_ptr = &m_BoardPositions[capturedFigurePosition.index()];
+            Position capturedFigurePosition(move.m_DesiredPosition.x, move.m_DesiredPosition.y - movementDirection);
             GameFigure** movedFigure_ptr = &m_BoardPositions[move.m_PiecePosition.index()];
+            GameFigure** capturedFigure_ptr = nullptr;
+            
+            if( m_BoardPositions[capturedFigurePosition.index()] )
+                capturedFigure_ptr = &m_BoardPositions[capturedFigurePosition.index()]; 
 
-            capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+            moveChanges = editBoard(movedFigure_ptr, capturedFigure_ptr, move, caching);
             break;
         }
         case CASTEL:{
@@ -235,21 +249,30 @@ namespace chess{
             GameFigure** moved_King = &m_BoardPositions[move.m_PiecePosition.index()];
             GameFigure** moved_Rook = &m_BoardPositions[rook_Position.index()];
 
-            (*moved_King)->setPosition(move.m_DesiredPosition);
-            (*moved_Rook)->setPosition(rook_DesiredPosition);
+            if( !caching ){
+                (*moved_King)->setPosition(move.m_DesiredPosition);
+                (*moved_Rook)->setPosition(rook_DesiredPosition);
+            }
 
             m_BoardPositions[move.m_DesiredPosition.index()] = *moved_King;
             (*moved_King)=nullptr;
 
             m_BoardPositions[rook_DesiredPosition.index()] = *moved_Rook;
             (*moved_Rook)=nullptr;
-            break;
-        }
-        case PROMOTING:
-            GameFigure** capturedFigure_ptr = &m_BoardPositions[move.m_DesiredPosition.index()]; 
-            GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
 
-            capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+            if(caching)
+                moveChanges = std::array<GameFigure*, 2> { (*moved_King), (*moved_Rook) };
+
+            break;
+        } 
+        case PROMOTING:
+            GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
+            GameFigure** capturedFigure_ptr = nullptr;
+            if( m_BoardPositions[move.m_DesiredPosition.index()] )
+                capturedFigure_ptr = &m_BoardPositions[move.m_DesiredPosition.index()]; 
+
+
+            moveChanges = editBoard(movedFigure_ptr, capturedFigure_ptr, move, caching);
             Position promotionPosition = move.m_DesiredPosition;
 
             GameFigure promotedFigure = GameFigureFactory(promotedFigureType.value(), move.m_PlayerColor, promotionPosition);
@@ -266,26 +289,32 @@ namespace chess{
             break;
         }
 
-        return capturedFigure;
+        return moveChanges;
     }
 
-    std::optional<GameFigure> Board::editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
-        std::optional<GameFigure> capturedFigure;
+    Board::MoveChanges Board::editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move, bool caching){
+        MoveChanges moveChanges = std::optional<GameFigure> {};
 
-        if(capturedFigure_ptr){
+        if( !caching && capturedFigure_ptr){
             auto capturedFigure_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
             if(capturedFigure_IT != m_Figures.end()){
-                capturedFigure = std::move(*capturedFigure_IT);
+                moveChanges = std::move(*capturedFigure_IT);
                 m_Figures.erase(capturedFigure_IT);
             }
         }
-        (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
+
+        if( !caching )
+            (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
+
 
         (*capturedFigure_ptr) = nullptr;
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
         (*movedFigure_ptr) = nullptr;
 
-        return capturedFigure;
+        if( caching )
+            moveChanges = std::array<GameFigure*, 2> {(*movedFigure_ptr), (*capturedFigure_ptr)};
+
+        return moveChanges;
     }
 
     MoveResult Board::isMoveLegal(const Move& move) const{
@@ -324,7 +353,7 @@ namespace chess{
     }
 
     bool Board::wouldBeInCheck(const Move& move){
-        //captured Figure heraus finden und speichern
+        //captured Figure heraus finden und speichern --> wie machen wir aus was die captured Figure ist?
 
 
         //nullptr noch wechseln

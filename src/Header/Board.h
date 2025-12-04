@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <algorithm>
+#include <variant>
 #include <nlohmann/json.hpp>
 #include "GameFigure.h"
 #include "Move.h"
@@ -22,6 +23,7 @@ namespace chess
 
     class Board
     {
+        using  MoveChanges = std::variant<std::optional<GameFigure>, std::array<GameFigure*, 2>>;
     private:
         std::array<GameFigure*, boardSize> m_BoardPositions;
         std::vector<GameFigure> m_Figures;
@@ -52,16 +54,12 @@ namespace chess
         void boardinit(const json& gameConfig);
         void addFigureOffJson(const json& posData, FigureType figureType, Color color);
         void updateGameState(const GameFigure* capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
-        std::optional<GameFigure> editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
+        MoveChanges editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move, bool caching);
 
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(Color color) const;
         bool wouldBeInCheck(const Move& move);
 
-        std::optional<GameFigure> executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);
+        MoveChanges executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType, bool caching = false);
     };
 }
-
-
-
-
