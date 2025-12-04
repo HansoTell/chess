@@ -354,6 +354,8 @@ namespace chess{
 
     bool Board::wouldBeInCheck(const Move& move){
         //captured Figure heraus finden und speichern --> wie machen wir aus was die captured Figure ist?
+        //Rook auf 1 , king auf 2 wäre eine möglichkeit heraus zu finden ob es eine captured figure gibt
+        //sollten upidate threats und execute move überlegen zu trennen mit gemeinsammen bausteinen, so ist es einfach sehr unlesbar
 
 
         //nullptr noch wechseln
