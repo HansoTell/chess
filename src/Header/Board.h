@@ -23,7 +23,7 @@ namespace chess
 
     class Board
     {
-        using  MoveChanges = std::variant<std::optional<GameFigure>, std::array<GameFigure*, 2>>;
+        using  MoveChanges = std::variant<std::optional<GameFigure>, ChangedPieces>;
     private:
         std::array<GameFigure*, boardSize> m_BoardPositions;
         std::vector<GameFigure> m_Figures;

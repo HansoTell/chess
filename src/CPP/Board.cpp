@@ -212,20 +212,18 @@ namespace chess{
     }
 
     Board::MoveChanges Board::executeMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType, bool caching){
-        //nochmal überlegen brauchen wir nicht captured figure gesondert? für update Threats methode??
         MoveChanges moveChanges;
-        
+       
+        /////////////
         if( moveResult.m_MoveType.value() == PROMOTING && caching )
             moveResult.m_MoveType = NORMAL;
-
+        /////////////
         switch (moveResult.m_MoveType.value())
         {
         case NORMAL:{
             GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
-            GameFigure** capturedFigure_ptr = nullptr;
-            if( m_BoardPositions[move.m_DesiredPosition.index()] )
-                capturedFigure_ptr = &m_BoardPositions[move.m_DesiredPosition.index()]; 
-
+            GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
+            /////(Andere Methode callen)
             moveChanges = editBoard(movedFigure_ptr, capturedFigure_ptr, move, caching);
 
             break;
@@ -234,11 +232,9 @@ namespace chess{
             int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
             Position capturedFigurePosition(move.m_DesiredPosition.x, move.m_DesiredPosition.y - movementDirection);
             GameFigure** movedFigure_ptr = &m_BoardPositions[move.m_PiecePosition.index()];
-            GameFigure** capturedFigure_ptr = nullptr;
-            
-            if( m_BoardPositions[capturedFigurePosition.index()] )
-                capturedFigure_ptr = &m_BoardPositions[capturedFigurePosition.index()]; 
+            GameFigure** capturedFigure_ptr =  ( m_BoardPositions[capturedFigurePosition.index()] ) ? &m_BoardPositions[capturedFigurePosition.index()]  : nullptr;
 
+            /////(Andere Methode callen)
             moveChanges = editBoard(movedFigure_ptr, capturedFigure_ptr, move, caching);
             break;
         }
@@ -249,10 +245,12 @@ namespace chess{
             GameFigure** moved_King = &m_BoardPositions[move.m_PiecePosition.index()];
             GameFigure** moved_Rook = &m_BoardPositions[rook_Position.index()];
 
+            ////////////////////
             if( !caching ){
                 (*moved_King)->setPosition(move.m_DesiredPosition);
                 (*moved_Rook)->setPosition(rook_DesiredPosition);
             }
+            /////////////////////////
 
             m_BoardPositions[move.m_DesiredPosition.index()] = *moved_King;
             (*moved_King)=nullptr;
@@ -260,18 +258,16 @@ namespace chess{
             m_BoardPositions[rook_DesiredPosition.index()] = *moved_Rook;
             (*moved_Rook)=nullptr;
 
+            ///////////////
             if(caching)
-                moveChanges = std::array<GameFigure*, 2> { (*moved_King), (*moved_Rook) };
-
+                moveChanges = ChangedPieces( (*moved_King), nullptr , (*moved_Rook) );
+            //////////////
             break;
         } 
         case PROMOTING:
             GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
-            GameFigure** capturedFigure_ptr = nullptr;
-            if( m_BoardPositions[move.m_DesiredPosition.index()] )
-                capturedFigure_ptr = &m_BoardPositions[move.m_DesiredPosition.index()]; 
-
-
+            GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
+            ///////////andere Methode(?)
             moveChanges = editBoard(movedFigure_ptr, capturedFigure_ptr, move, caching);
             Position promotionPosition = move.m_DesiredPosition;
 
@@ -294,7 +290,7 @@ namespace chess{
 
     Board::MoveChanges Board::editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move, bool caching){
         MoveChanges moveChanges = std::optional<GameFigure> {};
-
+        /////////////
         if( !caching && capturedFigure_ptr){
             auto capturedFigure_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
             if(capturedFigure_IT != m_Figures.end()){
@@ -302,17 +298,21 @@ namespace chess{
                 m_Figures.erase(capturedFigure_IT);
             }
         }
+        //////////
 
+        /////////
         if( !caching )
             (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
-
+        //////////
 
         (*capturedFigure_ptr) = nullptr;
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
         (*movedFigure_ptr) = nullptr;
 
+        /////////////
         if( caching )
-            moveChanges = std::array<GameFigure*, 2> {(*movedFigure_ptr), (*capturedFigure_ptr)};
+            moveChanges = ChangedPieces( (*movedFigure_ptr), (*capturedFigure_ptr), nullptr );
+        //////////
 
         return moveChanges;
     }
@@ -354,7 +354,6 @@ namespace chess{
 
     bool Board::wouldBeInCheck(const Move& move){
         //captured Figure heraus finden und speichern --> wie machen wir aus was die captured Figure ist?
-        //Rook auf 1 , king auf 2 wäre eine möglichkeit heraus zu finden ob es eine captured figure gibt
         //sollten upidate threats und execute move überlegen zu trennen mit gemeinsammen bausteinen, so ist es einfach sehr unlesbar
 
 
