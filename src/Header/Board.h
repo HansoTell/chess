@@ -23,7 +23,6 @@ namespace chess
 
     class Board
     {
-        using  MoveChanges = std::variant<std::optional<GameFigure>, ChangedPieces>;
     private:
         std::array<GameFigure*, boardSize> m_BoardPositions;
         std::vector<GameFigure> m_Figures;
@@ -43,23 +42,36 @@ namespace chess
         json parseJson(const std::string& file);
 
         void gameStateInit(const json& gameConfig);
-
-        void threatendSquaresInit();
-        CachedThreats updateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching = false);
-        template<typename F>
-        void removeOldThreats(const GameFigure* figure, F callback,  bool caching);
-        template<typename F>
-        void refreshThreats(GameFigure* figure, F callback, bool caching);
-
         void boardinit(const json& gameConfig);
-        void addFigureOffJson(const json& posData, FigureType figureType, Color color);
-        void updateGameState(const GameFigure* capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
-        MoveChanges editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move, bool caching);
+            void addFigureOffJson(const json& posData, FigureType figureType, Color color);
 
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(Color color) const;
         bool wouldBeInCheck(const Move& move);
+        void updateGameState(const GameFigure* capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
 
-        MoveChanges executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType, bool caching = false);
+        void threatendSquaresInit();
+        void updateThreatendSquares(const GameFigure* capturedFigure, const Move& move);
+            void removeOldThreats(const GameFigure* figure);
+            void refreshThreats(GameFigure* figure);
+
+        std::optional<GameFigure> executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);
+            std::optional<GameFigure> ExecuteNormalMove(const Move& move);
+            std::optional<GameFigure>ExecuteCastelingMove(const Move& move);
+            std::optional<GameFigure> ExecuteEnPassantMove(const Move& move);
+            std::optional<GameFigure>ExecutePromotingMove(const Move& move, FigureType promotedFigureType);
+        std::optional<GameFigure> editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
+
+
+        CachedThreats simulateUpdateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching = false);
+            void simulateRemoveOldThreats(const GameFigure* figure, CachedThreats& cachedThreats);
+            void simulateRefreshThreats(GameFigure* figure, CachedThreats& cachedThreats);
+
+        ChangedPieces simulateMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);        
+            ChangedPieces simulateNormalMove(const Move& move);
+            ChangedPieces simulateCastelingMove(const Move& move);
+            ChangedPieces simulateEnPassantMove(const Move& move);
+            ChangedPieces simulatePromotingMove(const Move& move);
+        ChangedPieces simulateEditBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
     };
 }

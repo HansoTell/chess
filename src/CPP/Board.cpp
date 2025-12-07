@@ -59,48 +59,18 @@ namespace chess{
         }
     }
 
-    CachedThreats Board::updateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching){
+    void Board::updateThreatendSquares(const GameFigure* capturedFigure, const Move& move){
 
-        //Müsste andere posi sein für cachen (move.m_piecePosition)
         GameFigure* movedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
 
-        CachedThreats cachedThreats;
-
-        auto addToAddedThreats = [&](const GameFigure* figure)
-        {
-            if(figure->getColor() == WHITE){
-                cachedThreats.addedThreatsWhite.insert(cachedThreats.addedThreatsWhite.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
-            }else{
-                cachedThreats.addedThreatsBlack.insert(cachedThreats.addedThreatsBlack.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
-            }
-        };
-
-        auto addToRemovedThreats  = [&](const GameFigure* figure)
-        {
-            if(figure->getColor() == WHITE){
-                cachedThreats.removedThreatsWhite.emplace_back(figure, figure->getThreatendSquares());
-            }else{
-                cachedThreats.removedThreatsBlack.emplace_back(figure, figure->getThreatendSquares());
-            }
-        };
-
-        if( caching ){
-            cachedThreats.addedThreatsWhite.reserve(58);
-            cachedThreats.addedThreatsBlack.reserve(58);
-
-            cachedThreats.removedThreatsWhite.reserve(8);
-            cachedThreats.removedThreatsBlack.reserve(8);
-        }
-
         if(capturedFigure)
-            removeOldThreats(capturedFigure, addToRemovedThreats, caching);
+            removeOldThreats(capturedFigure);
                 
         if(movedFigure->getMovementType() == JUMPING){
-            removeOldThreats(movedFigure, addToRemovedThreats, caching);
-            refreshThreats(movedFigure, addToAddedThreats, caching);
+            removeOldThreats(movedFigure);
+            refreshThreats(movedFigure);
         }
 
-        //pass das für caching=true?
         for(auto& figure : m_Figures){
             if(figure.getMovementType() == SLIDING && 
                     (isInRay(move.m_PiecePosition, figure.getPosition()) 
@@ -108,21 +78,75 @@ namespace chess{
                     || (capturedFigure && isInRay(capturedFigure->getPosition(), figure.getPosition()))))
             {
                 GameFigure* figure_ptr = &figure;
-                removeOldThreats(figure_ptr, addToRemovedThreats, caching);
-                refreshThreats(figure_ptr, addToAddedThreats, caching);
+                removeOldThreats(figure_ptr);
+                refreshThreats(figure_ptr);
+            }
+        }
+    }
+
+    CachedThreats Board::simulateUpdateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching){
+
+        GameFigure* movedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
+
+        CachedThreats cachedThreats;
+
+        cachedThreats.addedThreatsWhite.reserve(58);
+        cachedThreats.addedThreatsBlack.reserve(58);
+
+        cachedThreats.removedThreatsWhite.reserve(8);
+        cachedThreats.removedThreatsBlack.reserve(8);
+
+        if(capturedFigure)
+            simulateRemoveOldThreats(capturedFigure, cachedThreats);
+                
+        if(movedFigure->getMovementType() == JUMPING){
+            simulateRemoveOldThreats(movedFigure, cachedThreats);
+            simulateRefreshThreats(movedFigure, cachedThreats);
+        }
+
+        for(auto& figure : m_Figures){
+            if(figure.getMovementType() == SLIDING && 
+                    (isInRay(move.m_PiecePosition, figure.getPosition()) 
+                    || isInRay(move.m_DesiredPosition, figure.getPosition()) 
+                    || (capturedFigure && isInRay(capturedFigure->getPosition(), figure.getPosition()))))
+            {
+                GameFigure* figure_ptr = &figure;
+                simulateRemoveOldThreats(figure_ptr, cachedThreats);
+                simulateRefreshThreats(figure_ptr, cachedThreats);
             }
         }
 
         return cachedThreats;
     }
 
-    template<typename F>
-    void Board::removeOldThreats(const GameFigure* figure, F callback , bool caching){
+    void Board::removeOldThreats(const GameFigure* figure){
         std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
         const auto& old_Figure_Threats = figure->getThreatendSquares();
 
-        if( caching )
-            callback(figure);
+        for(const Position& threat : old_Figure_Threats){
+            auto toRemoveThreat = std::find(ownColorThreats.cbegin(), ownColorThreats.cend(), threat);
+            if(toRemoveThreat != ownColorThreats.end())
+                ownColorThreats.erase(toRemoveThreat);
+        }
+    }    
+
+    void Board::refreshThreats(GameFigure* figure){
+        std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
+
+        figure->updateThreats(m_BoardView);
+        
+        ownColorThreats.insert(ownColorThreats.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
+    }
+
+    void Board::simulateRemoveOldThreats(const GameFigure* figure, CachedThreats& cachedThreats){
+        std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
+        const auto& old_Figure_Threats = figure->getThreatendSquares();
+
+        if(figure->getColor() == WHITE){
+            cachedThreats.removedThreatsWhite.emplace_back(figure, figure->getThreatendSquares());
+        }else{
+            cachedThreats.removedThreatsBlack.emplace_back(figure, figure->getThreatendSquares());
+        }
         
         for(const Position& threat : old_Figure_Threats){
             auto toRemoveThreat = std::find(ownColorThreats.cbegin(), ownColorThreats.cend(), threat);
@@ -131,14 +155,16 @@ namespace chess{
         }
     }    
 
-    template<typename F>
-    void Board::refreshThreats(GameFigure* figure, F callback, bool caching){
+    void Board::simulateRefreshThreats(GameFigure* figure, CachedThreats& cachedThreats){
         std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
 
         figure->updateThreats(m_BoardView);
         
-        if( caching )
-            callback(figure);
+        if(figure->getColor() == WHITE){
+            cachedThreats.addedThreatsWhite.insert(cachedThreats.addedThreatsWhite.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
+        }else{
+            cachedThreats.addedThreatsBlack.insert(cachedThreats.addedThreatsBlack.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
+        }
         
         ownColorThreats.insert(ownColorThreats.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
     }
@@ -188,12 +214,9 @@ namespace chess{
         }
 
         FigureType movedFigureType = m_BoardView.getFigureAt(move.m_PiecePosition)->getFigureType();
-        auto capturedFigure_variant = executeMove(move, moveResult, promotedFigureType);
-        auto* capturedFigure = std::get_if<std::optional<GameFigure>>(&capturedFigure_variant);
-        if(!capturedFigure)
-            std::cout << "Error in execute Move result" << "\n";
+        std::optional<GameFigure> capturedFigure = executeMove(move, moveResult, promotedFigureType);
 
-        const GameFigure* capturedFigure_ptr = (capturedFigure->has_value()) ? &capturedFigure->value() : nullptr;
+        const GameFigure* capturedFigure_ptr = (capturedFigure.has_value()) ? &capturedFigure.value() : nullptr;
         updateGameState(capturedFigure_ptr, move, moveResult.m_MoveType, movedFigureType);
 
         return true;
@@ -211,110 +234,70 @@ namespace chess{
             m_GameState.toggleKingInCheck(opposite(move.m_PlayerColor));
     }
 
-    Board::MoveChanges Board::executeMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType, bool caching){
-        MoveChanges moveChanges;
-       
-        /////////////
-        if( moveResult.m_MoveType.value() == PROMOTING && caching )
-            moveResult.m_MoveType = NORMAL;
-        /////////////
+    std::optional<GameFigure> Board::executeMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType){
         switch (moveResult.m_MoveType.value())
         {
-        case NORMAL:{
-            GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
-            GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
-            /////(Andere Methode callen)
-            moveChanges = editBoard(movedFigure_ptr, capturedFigure_ptr, move, caching);
-
-            break;
-        }
-        case EN_PASSANT:{
-            int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
-            Position capturedFigurePosition(move.m_DesiredPosition.x, move.m_DesiredPosition.y - movementDirection);
-            GameFigure** movedFigure_ptr = &m_BoardPositions[move.m_PiecePosition.index()];
-            GameFigure** capturedFigure_ptr =  ( m_BoardPositions[capturedFigurePosition.index()] ) ? &m_BoardPositions[capturedFigurePosition.index()]  : nullptr;
-
-            /////(Andere Methode callen)
-            moveChanges = editBoard(movedFigure_ptr, capturedFigure_ptr, move, caching);
-            break;
-        }
-        case CASTEL:{
-            bool shortCastle = (move.getXOffSet() > 0); 
-            Position rook_Position = (shortCastle) ? Position(7, move.m_PiecePosition.y): Position(0, move.m_PiecePosition.y);
-            Position rook_DesiredPosition = (shortCastle) ? Position(move.m_DesiredPosition.x -1, move.m_PiecePosition.y) : Position(move.m_DesiredPosition.x+1, move.m_PiecePosition.y);
-            GameFigure** moved_King = &m_BoardPositions[move.m_PiecePosition.index()];
-            GameFigure** moved_Rook = &m_BoardPositions[rook_Position.index()];
-
-            ////////////////////
-            if( !caching ){
-                (*moved_King)->setPosition(move.m_DesiredPosition);
-                (*moved_Rook)->setPosition(rook_DesiredPosition);
-            }
-            /////////////////////////
-
-            m_BoardPositions[move.m_DesiredPosition.index()] = *moved_King;
-            (*moved_King)=nullptr;
-
-            m_BoardPositions[rook_DesiredPosition.index()] = *moved_Rook;
-            (*moved_Rook)=nullptr;
-
-            ///////////////
-            if(caching)
-                moveChanges = ChangedPieces( (*moved_King), nullptr , (*moved_Rook) );
-            //////////////
-            break;
-        } 
+        case NORMAL:
+            return ExecuteNormalMove(move);
+        
+        case EN_PASSANT:
+            return ExecuteEnPassantMove(move);
+        
+        case CASTEL:
+            return ExecuteCastelingMove(move);
+         
         case PROMOTING:
-            GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
-            GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
-            ///////////andere Methode(?)
-            moveChanges = editBoard(movedFigure_ptr, capturedFigure_ptr, move, caching);
-            Position promotionPosition = move.m_DesiredPosition;
-
-            GameFigure promotedFigure = GameFigureFactory(promotedFigureType.value(), move.m_PlayerColor, promotionPosition);
-
-            auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
-            if(deltePawn_IT != m_Figures.end()){
-                removeOldThreats(*capturedFigure_ptr, [&](const GameFigure* figure){}, false);
-                m_Figures.erase(deltePawn_IT);
-            }
-
-            m_Figures.push_back(std::move(promotedFigure));
-            (*capturedFigure_ptr) = &m_Figures.back();
-
-            break;
+            return ExecutePromotingMove(move, promotedFigureType.value());
         }
 
-        return moveChanges;
+        return {};
     }
 
-    Board::MoveChanges Board::editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move, bool caching){
-        MoveChanges moveChanges = std::optional<GameFigure> {};
-        /////////////
-        if( !caching && capturedFigure_ptr){
+    ChangedPieces Board::simulateMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType){
+        switch (moveResult.m_MoveType.value())
+        {
+        case NORMAL:
+            return simulateNormalMove(move);
+        
+        case EN_PASSANT:
+            return simulateEnPassantMove(move);
+        
+        case CASTEL:
+            return simulateCastelingMove(move);
+         
+        case PROMOTING:
+            return simulatePromotingMove(move);
+        }
+
+        return ChangedPieces(nullptr, nullptr, nullptr);
+    }
+
+    std::optional<GameFigure> Board::editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
+        std::optional<GameFigure> capturedFigure = {};
+
+        if( capturedFigure_ptr ){
             auto capturedFigure_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
             if(capturedFigure_IT != m_Figures.end()){
-                moveChanges = std::move(*capturedFigure_IT);
+                capturedFigure = std::move(*capturedFigure_IT);
                 m_Figures.erase(capturedFigure_IT);
             }
         }
-        //////////
 
-        /////////
-        if( !caching )
-            (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
-        //////////
+        (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
 
         (*capturedFigure_ptr) = nullptr;
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
         (*movedFigure_ptr) = nullptr;
 
-        /////////////
-        if( caching )
-            moveChanges = ChangedPieces( (*movedFigure_ptr), (*capturedFigure_ptr), nullptr );
-        //////////
+        return capturedFigure;
+    }
 
-        return moveChanges;
+    ChangedPieces Board::simulateEditBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
+        (*capturedFigure_ptr) = nullptr;
+        m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
+        (*movedFigure_ptr) = nullptr;
+
+        return ChangedPieces( (*movedFigure_ptr), (*capturedFigure_ptr), nullptr );
     }
 
     MoveResult Board::isMoveLegal(const Move& move) const{
@@ -358,7 +341,7 @@ namespace chess{
 
 
         //nullptr noch wechseln
-        CachedThreats cachedThreats = updateThreatendSquares(nullptr, move, true);
+        CachedThreats cachedThreats = simulateUpdateThreatendSquares(nullptr, move, true);
 
         bool wouldbeChecked = isInCheck(move.m_PlayerColor);
 
@@ -366,5 +349,95 @@ namespace chess{
 
 
         return wouldbeChecked;
+    }
+
+    std::optional<GameFigure> Board::ExecuteNormalMove(const Move& move){
+
+        GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
+        GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
+
+        return editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+    }
+    std::optional<GameFigure> Board::ExecuteCastelingMove(const Move& move){
+
+        bool shortCastle = (move.getXOffSet() > 0); 
+        Position rook_Position = (shortCastle) ? Position(7, move.m_PiecePosition.y): Position(0, move.m_PiecePosition.y);
+        Position rook_DesiredPosition = (shortCastle) ? Position(move.m_DesiredPosition.x -1, move.m_PiecePosition.y) : Position(move.m_DesiredPosition.x+1, move.m_PiecePosition.y);
+        GameFigure** moved_King = &m_BoardPositions[move.m_PiecePosition.index()];
+        GameFigure** moved_Rook = &m_BoardPositions[rook_Position.index()];
+
+        (*moved_King)->setPosition(move.m_DesiredPosition);
+        (*moved_Rook)->setPosition(rook_DesiredPosition);
+
+        m_BoardPositions[move.m_DesiredPosition.index()] = *moved_King;
+        (*moved_King)=nullptr;
+
+        m_BoardPositions[rook_DesiredPosition.index()] = *moved_Rook;
+        (*moved_Rook)=nullptr;
+
+        return {};
+    }
+    std::optional<GameFigure> Board::ExecuteEnPassantMove(const Move& move){
+        int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
+        Position capturedFigurePosition(move.m_DesiredPosition.x, move.m_DesiredPosition.y - movementDirection);
+        GameFigure** movedFigure_ptr = &m_BoardPositions[move.m_PiecePosition.index()];
+        GameFigure** capturedFigure_ptr =  ( m_BoardPositions[capturedFigurePosition.index()] ) ? &m_BoardPositions[capturedFigurePosition.index()]  : nullptr;
+
+        return editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+    }
+    std::optional<GameFigure> Board::ExecutePromotingMove(const Move& move, FigureType promotedFigureType){
+        std::optional<GameFigure> capturedFigure = {};
+
+        GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
+        GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
+
+
+        capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+        Position promotionPosition = move.m_DesiredPosition;
+
+        GameFigure promotedFigure = GameFigureFactory(promotedFigureType, move.m_PlayerColor, promotionPosition);
+
+        auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
+        if(deltePawn_IT != m_Figures.end()){
+            removeOldThreats(*capturedFigure_ptr);
+            m_Figures.erase(deltePawn_IT);
+        }
+
+        m_Figures.push_back(std::move(promotedFigure));
+        (*capturedFigure_ptr) = &m_Figures.back();
+
+        return capturedFigure;
+    }
+    ChangedPieces Board::simulateNormalMove(const Move& move){
+        GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
+        GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
+        
+        return simulateEditBoard(movedFigure_ptr, capturedFigure_ptr, move);
+    }
+    ChangedPieces Board::simulateCastelingMove(const Move& move){
+        bool shortCastle = (move.getXOffSet() > 0); 
+        Position rook_Position = (shortCastle) ? Position(7, move.m_PiecePosition.y): Position(0, move.m_PiecePosition.y);
+        Position rook_DesiredPosition = (shortCastle) ? Position(move.m_DesiredPosition.x -1, move.m_PiecePosition.y) : Position(move.m_DesiredPosition.x+1, move.m_PiecePosition.y);
+        GameFigure** moved_King = &m_BoardPositions[move.m_PiecePosition.index()];
+        GameFigure** moved_Rook = &m_BoardPositions[rook_Position.index()];
+
+        m_BoardPositions[move.m_DesiredPosition.index()] = *moved_King;
+        (*moved_King)=nullptr;
+
+        m_BoardPositions[rook_DesiredPosition.index()] = *moved_Rook;
+        (*moved_Rook)=nullptr;
+
+        return ChangedPieces( (*moved_King), nullptr , (*moved_Rook) );
+    }
+    ChangedPieces Board::simulateEnPassantMove(const Move& move){
+        int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
+        Position capturedFigurePosition(move.m_DesiredPosition.x, move.m_DesiredPosition.y - movementDirection);
+        GameFigure** movedFigure_ptr = &m_BoardPositions[move.m_PiecePosition.index()];
+        GameFigure** capturedFigure_ptr =  ( m_BoardPositions[capturedFigurePosition.index()] ) ? &m_BoardPositions[capturedFigurePosition.index()]  : nullptr;
+
+        return  simulateEditBoard(movedFigure_ptr, capturedFigure_ptr, move);
+    }
+    ChangedPieces Board::simulatePromotingMove(const Move& move){
+        return simulateNormalMove(move);
     }
 }
