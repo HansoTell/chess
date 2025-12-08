@@ -1,6 +1,20 @@
 #include "GameState.h"
 
 namespace chess{
+    void GameState::parseGameStateJson(const json& gameConfig){
+        auto gameStateJson = gameConfig["GameState"];
+
+        m_HasWhiteKingMoved = gameStateJson["HasWhiteKingMoved"].get<bool>();
+        m_isWhiteKingInCheck = gameStateJson["isWhiteKingInCheck"].get<bool>();
+        m_HasWhiteARookMoved = gameStateJson["hasWhiteARookMoved"].get<bool>();
+        m_HasWhiteHRookMoved = gameStateJson["HasWhiteHRookMoved"].get<bool>();
+
+        m_HasBlackKingMoved = gameStateJson["HasBlackKingMoved"].get<bool>();
+        m_isBlackKingInCheck = gameStateJson["isBlackKingInCheck"].get<bool>();
+        m_HasBlackARookMoved = gameStateJson["hasBlackARookMoved"].get<bool>();
+        m_HasBlackHRookMoved = gameStateJson["HasBlackHRookMoved"].get<bool>();
+    }
+
     bool GameState::isKingInCheck(Color color) const {
         if(color == WHITE){
             return m_isWhiteKingInCheck;

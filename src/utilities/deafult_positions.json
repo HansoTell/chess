@@ -1,5 +1,19 @@
 
 {
+    "GameState" : 
+    {
+        "HasWhiteKingMoved" : false,
+        "isWhiteKingInCheck" : false,
+        "hasWhiteARookMoved" : false,
+        "hasWhiteHRookMoved" : false,
+
+        "HasBlackKingMoved": false,
+        "isBlackKingInCheck": false,
+        "hasBlackARookMoved" : false,
+        "hasBlackHRookMoved" : false
+
+    },
+
     "figure_positions": 
     {
         "Rook" :{"FigureType" : "ROOK", "WHITE" :[[0,0], [7,0]], "BLACK" : [[7,7], [0,7]] },

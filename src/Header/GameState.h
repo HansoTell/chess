@@ -1,10 +1,13 @@
 #pragma once
 #include <vector>
 #include <optional>
+#include <nlohmann/json.hpp>
 #include "Color.h"
 #include "Move.h"
 #include "FigureTypes.h"
 
+
+using json = nlohmann::json;
 namespace chess{
 
     class GameState
@@ -28,6 +31,7 @@ namespace chess{
 
     public:
         GameState() { m_BlackThreatendSquares.reserve(74); m_WhiteThreatendSquares.reserve(74); }
+        void parseGameStateJson(const json& gameConfig);
 
         bool hasKingMoved(Color color) const { return (color == WHITE) ? m_HasWhiteKingMoved : m_HasBlackKingMoved; }
         bool hasHRookMoved(Color color) const { return (color == WHITE) ? m_HasWhiteHRookMoved : m_HasBlackHRookMoved; }

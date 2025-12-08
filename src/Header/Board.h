@@ -63,8 +63,8 @@ namespace chess
         std::optional<GameFigure> editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
 
 
-        CachedThreats simulateUpdateThreatendSquares(const GameFigure* capturedFigure, const Move& move);
-            void simulateRemoveOldThreats(const GameFigure* figure, CachedThreats& cachedThreats);
+        CachedThreats simulateUpdateThreatendSquares(GameFigure* capturedFigure, const Move& move);
+            void simulateRemoveOldThreats(GameFigure* figure, CachedThreats& cachedThreats);
             void simulateRefreshThreats(GameFigure* figure, CachedThreats& cachedThreats);
         void revertSimulatedThreats(CachedThreats cachedThreats);
             void revertAddedThreats(const CachedThreats cachedThreats, Color color);

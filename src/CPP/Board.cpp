@@ -43,7 +43,7 @@ namespace chess{
     }
 
     void Board::gameStateInit(const json& gameConfig){
-        //json parsen für einstellungen
+        m_GameState.parseGameStateJson(gameConfig);
 
         threatendSquaresInit();
     }
@@ -84,7 +84,7 @@ namespace chess{
         }
     }
 
-    CachedThreats Board::simulateUpdateThreatendSquares(const GameFigure* capturedFigure, const Move& move){
+    CachedThreats Board::simulateUpdateThreatendSquares(GameFigure* capturedFigure, const Move& move){
 
         GameFigure* movedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
 
@@ -133,7 +133,7 @@ namespace chess{
         ownColorThreats.insert(ownColorThreats.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
     }
 
-    void Board::simulateRemoveOldThreats(const GameFigure* figure, CachedThreats& cachedThreats){
+    void Board::simulateRemoveOldThreats(GameFigure* figure, CachedThreats& cachedThreats){
         const auto& old_Figure_Threats = figure->getThreatendSquares();
 
         if(figure->getColor() == WHITE){
