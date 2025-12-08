@@ -37,5 +37,6 @@ namespace chess{
         void updateGameState(const Move& move, std::optional<MoveType> MoveType, FigureType movedFigureType);
         const std::vector<Position>& getThreatendSquares(Color color) const; 
         std::vector<Position>& getThreatendSquares(Color color);
+        void removeThreatsFormThreatMap(const std::vector<Position>& threatsToRemove, Color color);
     };
 }

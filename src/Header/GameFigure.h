@@ -35,6 +35,7 @@ namespace chess{
     public:
         MoveResult isMoveLegal(const Move& move, const BoardView& boardView, const GameState& GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
         void updateThreats(const BoardView& BoardView) { m_Threats =  m_MovmentLogic->getThreatendSquares(m_Position, BoardView, m_Color); }
+        void setThreats(std::vector<Position>& threats) { m_Threats = threats; }
     public:
         MovementTypes getMovementType() const { return m_MovementType; }
         FigureType getFigureType() const { return m_FigureType; }

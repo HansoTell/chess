@@ -85,4 +85,17 @@ namespace chess{
         }
     }
 
+    void GameState::removeThreatsFormThreatMap(const std::vector<Position>& threatsToRemove, Color color){
+
+        std::vector<Position>& threatMap = getThreatendSquares(color);
+
+        for(auto& pos : threatsToRemove){
+            auto toRemoveThreat = std::find(threatMap.cbegin(), threatMap.cend(), pos);
+
+            if(toRemoveThreat != threatMap.end()){
+                threatMap.erase(toRemoveThreat);
+            }
+        }
+    }
+
 }

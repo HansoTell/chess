@@ -84,7 +84,7 @@ namespace chess{
         }
     }
 
-    CachedThreats Board::simulateUpdateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching){
+    CachedThreats Board::simulateUpdateThreatendSquares(const GameFigure* capturedFigure, const Move& move){
 
         GameFigure* movedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
 
@@ -120,14 +120,9 @@ namespace chess{
     }
 
     void Board::removeOldThreats(const GameFigure* figure){
-        std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
         const auto& old_Figure_Threats = figure->getThreatendSquares();
 
-        for(const Position& threat : old_Figure_Threats){
-            auto toRemoveThreat = std::find(ownColorThreats.cbegin(), ownColorThreats.cend(), threat);
-            if(toRemoveThreat != ownColorThreats.end())
-                ownColorThreats.erase(toRemoveThreat);
-        }
+        m_GameState.removeThreatsFormThreatMap(old_Figure_Threats, figure->getColor());
     }    
 
     void Board::refreshThreats(GameFigure* figure){
@@ -139,7 +134,6 @@ namespace chess{
     }
 
     void Board::simulateRemoveOldThreats(const GameFigure* figure, CachedThreats& cachedThreats){
-        std::vector<Position>& ownColorThreats = m_GameState.getThreatendSquares(figure->getColor());
         const auto& old_Figure_Threats = figure->getThreatendSquares();
 
         if(figure->getColor() == WHITE){
@@ -147,12 +141,8 @@ namespace chess{
         }else{
             cachedThreats.removedThreatsBlack.emplace_back(figure, figure->getThreatendSquares());
         }
-        
-        for(const Position& threat : old_Figure_Threats){
-            auto toRemoveThreat = std::find(ownColorThreats.cbegin(), ownColorThreats.cend(), threat);
-            if(toRemoveThreat != ownColorThreats.end())
-                ownColorThreats.erase(toRemoveThreat);
-        }
+
+        m_GameState.removeThreatsFormThreatMap(old_Figure_Threats, figure->getColor());
     }    
 
     void Board::simulateRefreshThreats(GameFigure* figure, CachedThreats& cachedThreats){
@@ -205,13 +195,13 @@ namespace chess{
             return false;
         }
 
-        if(wouldBeInCheck(move))
+        if(wouldBeInCheck(move, moveResult))
             return false;
 
         std::optional<FigureType> promotedFigureType;
-        if(moveResult.m_MoveType == PROMOTING){
+        if(moveResult.m_MoveType == PROMOTING)
             promotedFigureType = m_BoardPrinter->getPromotionFigure();
-        }
+        
 
         FigureType movedFigureType = m_BoardView.getFigureAt(move.m_PiecePosition)->getFigureType();
         std::optional<GameFigure> capturedFigure = executeMove(move, moveResult, promotedFigureType);
@@ -335,20 +325,57 @@ namespace chess{
         return false;
     }
 
-    bool Board::wouldBeInCheck(const Move& move){
-        //captured Figure heraus finden und speichern --> wie machen wir aus was die captured Figure ist?
-        //sollten upidate threats und execute move überlegen zu trennen mit gemeinsammen bausteinen, so ist es einfach sehr unlesbar
+    bool Board::wouldBeInCheck(const Move& move, MoveResult moveResult){
+        const ChangedPieces changedPieces = simulateMove(move, moveResult, {});
 
-
-        //nullptr noch wechseln
-        CachedThreats cachedThreats = simulateUpdateThreatendSquares(nullptr, move, true);
+        const CachedThreats cachedThreats = simulateUpdateThreatendSquares(changedPieces.m_CapturedPiece , move);
 
         bool wouldbeChecked = isInCheck(move.m_PlayerColor);
 
-        //revert changes
-
+        revertSimulatedMove(changedPieces);
+        revertSimulatedThreats(cachedThreats);
 
         return wouldbeChecked;
+    }
+
+    void Board::revertSimulatedMove(const ChangedPieces changedPieces){
+        if(changedPieces.m_CapturedPiece)
+            placeFigureOnBoard(changedPieces.m_CapturedPiece);
+        
+        if(changedPieces.m_MovedPiece)
+            placeFigureOnBoard(changedPieces.m_MovedPiece);
+        
+        if(changedPieces.m_CastelingRook)
+            placeFigureOnBoard(changedPieces.m_CastelingRook);
+    }
+
+    void Board::placeFigureOnBoard(GameFigure* figureToPlace){
+        m_BoardPositions[figureToPlace->getPosition().index()] = figureToPlace;
+    }
+
+    void Board::revertSimulatedThreats(CachedThreats cachedThreats){
+
+        revertAddedThreats(cachedThreats, WHITE);
+        revertAddedThreats(cachedThreats, BLACK);
+
+        revertRemovedThreats(cachedThreats, WHITE);
+        revertRemovedThreats(cachedThreats, BLACK);
+    }
+
+    void Board::revertAddedThreats(const CachedThreats cachedThreats, Color color){
+        const std::vector<Position>& threatsToRemove = cachedThreats.getAddedThreats(color);
+
+        m_GameState.removeThreatsFormThreatMap(threatsToRemove, color);
+    }
+
+    void Board::revertRemovedThreats(CachedThreats cachedThreats, Color color){
+        std::vector<std::tuple<GameFigure*, std::vector<Position>>>& threatsToAdd = cachedThreats.getRemovedThreats(color);
+
+        for(auto&[pFigure, removedThreats] : threatsToAdd){
+            pFigure->setThreats(removedThreats);
+
+            m_GameState.removeThreatsFormThreatMap(removedThreats, color);
+        }
     }
 
     std::optional<GameFigure> Board::ExecuteNormalMove(const Move& move){

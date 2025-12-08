@@ -47,7 +47,7 @@ namespace chess
 
         MoveResult isMoveLegal(const Move& move) const;
         bool isInCheck(Color color) const;
-        bool wouldBeInCheck(const Move& move);
+        bool wouldBeInCheck(const Move& move, MoveResult moveResult);
         void updateGameState(const GameFigure* capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType);
 
         void threatendSquaresInit();
@@ -63,9 +63,12 @@ namespace chess
         std::optional<GameFigure> editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
 
 
-        CachedThreats simulateUpdateThreatendSquares(const GameFigure* capturedFigure, const Move& move, bool caching = false);
+        CachedThreats simulateUpdateThreatendSquares(const GameFigure* capturedFigure, const Move& move);
             void simulateRemoveOldThreats(const GameFigure* figure, CachedThreats& cachedThreats);
             void simulateRefreshThreats(GameFigure* figure, CachedThreats& cachedThreats);
+        void revertSimulatedThreats(CachedThreats cachedThreats);
+            void revertAddedThreats(const CachedThreats cachedThreats, Color color);
+            void revertRemovedThreats(CachedThreats cachedThreats, Color color);
 
         ChangedPieces simulateMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);        
             ChangedPieces simulateNormalMove(const Move& move);
@@ -73,5 +76,7 @@ namespace chess
             ChangedPieces simulateEnPassantMove(const Move& move);
             ChangedPieces simulatePromotingMove(const Move& move);
         ChangedPieces simulateEditBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
+        void revertSimulatedMove(const ChangedPieces changedPieces);
+            void placeFigureOnBoard(GameFigure* figureToPlace);
     };
 }

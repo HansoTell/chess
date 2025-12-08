@@ -13,8 +13,11 @@ namespace chess{
         std::vector<Position> addedThreatsWhite;
         std::vector<Position> addedThreatsBlack;
 
-        std::vector<std::tuple<const GameFigure*, std::vector<Position>>> removedThreatsWhite;
-        std::vector<std::tuple<const GameFigure*, std::vector<Position>>> removedThreatsBlack;
+        std::vector<std::tuple<GameFigure*, std::vector<Position>>> removedThreatsWhite;
+        std::vector<std::tuple<GameFigure*, std::vector<Position>>> removedThreatsBlack;
+
+        const std::vector<Position>& getAddedThreats(Color color) const { return (color == WHITE) ? addedThreatsWhite : addedThreatsBlack; }
+        std::vector<std::tuple<GameFigure*, std::vector<Position>>>& getRemovedThreats(Color color) { return (color == WHITE) ? removedThreatsWhite : removedThreatsBlack; }
     };
 
 
@@ -22,8 +25,8 @@ namespace chess{
         ChangedPieces(GameFigure* movedPiece, GameFigure* capturedPiece, GameFigure* castelingRook) : 
                 m_MovedPiece(movedPiece), m_CapturedPiece(capturedPiece), m_CastelingRook(castelingRook) {}
 
-        GameFigure* m_MovedPiece;
-        GameFigure* m_CapturedPiece;
-        GameFigure* m_CastelingRook;
+        GameFigure* m_MovedPiece = nullptr;
+        GameFigure* m_CapturedPiece = nullptr;
+        GameFigure* m_CastelingRook = nullptr;
     };
 }
