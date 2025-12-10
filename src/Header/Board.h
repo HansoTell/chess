@@ -21,6 +21,17 @@ using json = nlohmann::json;
 namespace chess
 {
 
+    //Neue Idee zum move reworken
+    //anstatt einen move anzufragen und dann zu prüfen ob er legal ist am anfang der runde alle legalen moves berechnen und in figure speichernm
+    //dann einersiets kann gezeiotg werden was überhaupt machbar ist und andererseits anfragen ob move legal ganz einfach gucken ob move in move cache der figur
+    //Brauchen:
+    //LegalMoveCache in GameFigure --> mit entsprechenden methoden
+    //Caclulate all Legal Moves --> ruft bei allen figure update moves map auf (oder vielleicht kann  man sogar bei manchen cachen wenn sie nicht bewegt wurden oder so)
+    //isMoveLegal() umstellen nur von der gezougenen figur wird geguckt ob bei geogener figr move im move cache
+    //make move bleibt fast gleich nur would be in check bleibt weg
+    //eigentlich performance schlechter aber glaube auch für ai sinnvoll und für gui wäre auch sinnvoller
+
+
     class Board
     {
     private:
