@@ -1,30 +1,51 @@
 #include <iostream>
 #include <memory>
+#include <stdlib.h>
 
 
 #include "Board.h"
 
+bool g_bQuit = false;
+chess::Color g_eCurrColor = chess::Color::WHITE;
+
+chess::Position reciveInput( std::string& out ){ 
+    std::cin >> out;
+    if(out == "q")
+        g_bQuit = true;
+    return chess::Position( toupper( out[0] ) - 'A', atoi( out.c_str() ));
+}
+
+bool moveAusführen(chess::Board& board){
+
+    std::string input;
+    std::cout << "Gebe Position von Figur zu bewegen an in der Form BuchstabeZahl: ";
+
+    chess::Position piecePosition = reciveInput(input);
+
+    std::cout << "Gebe die Ziel Position angeben in der Form BuchstabeZahl: ";
+    
+    chess::Position desiredPosition = reciveInput(input);
+
+    chess::Move move(piecePosition, desiredPosition, g_eCurrColor);
+
+    return board.makeMove(move);
+}
+
 
 int main(){
     std::string source ="src/utilities/deafult_positions.json"; 
-    chess::Board b(source, std::make_unique<chess::ASCIIPrinter>());
+    chess::Board board(source, std::make_unique<chess::ASCIIPrinter>());
 
-    bool bQuit = false;
-    chess::Color currColor = chess::Color::WHITE;
+    board.printBoard();
 
-    while( !bQuit ){
-        b.printBoard();
+    while( !g_bQuit ){
 
-        currColor = chess::opposite(currColor);
-        std::string input;
-        std::cout << "Gebe Position von Figur zu bewegen an: ";
-        std::cin >> input;
-        if(input == "q")
-            bQuit = true;
-
-        //casten so dass move erstellt wird
-
-
+        if( moveAusführen(board) ){
+            board.printBoard();
+            g_eCurrColor = chess::opposite(g_eCurrColor);
+        }else{
+            std::cout << "Ungültiger Move bitte versuche es erneut!" << "\n";
+        }
     }
      
     return 0;
