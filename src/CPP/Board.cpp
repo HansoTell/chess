@@ -283,11 +283,16 @@ namespace chess{
     }
 
     ChangedPieces Board::simulateEditBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
-        (*capturedFigure_ptr) = nullptr;
+
+        GameFigure* capturedFigure = (capturedFigure_ptr) ? (*capturedFigure_ptr) : nullptr;
+
+        if(capturedFigure_ptr)
+            (*capturedFigure_ptr) = nullptr;
+
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
         (*movedFigure_ptr) = nullptr;
 
-        return ChangedPieces( (*movedFigure_ptr), (*capturedFigure_ptr), nullptr );
+        return ChangedPieces( (*movedFigure_ptr), capturedFigure , nullptr );
     }
 
     MoveResult Board::isMoveLegal(const Move& move) const{

@@ -3,6 +3,8 @@
 #include "Constants.h"
 #include "MoveType.h"
 
+#include <iostream>
+
 namespace chess{
 
     struct Position{
@@ -15,6 +17,8 @@ namespace chess{
         int index() const { return x + y * boardWidth; }
     };
 
+    std::ostream& operator<<(std::ostream& os, const Position& position);
+
     struct Move{
         Position m_PiecePosition, m_DesiredPosition;
         Color m_PlayerColor;
@@ -23,7 +27,9 @@ namespace chess{
         Move(const Move& other) = default;
 
         int getXOffSet() const { return m_DesiredPosition.x - m_PiecePosition.x; }
-        int getYOffSet() const { return m_DesiredPosition.y - m_DesiredPosition.y; }
+        int getYOffSet() const { return m_DesiredPosition.y - m_PiecePosition.y; }
         bool isOutOfBounds() const;
     };
+
+    std::ostream& operator<<(std::ostream& os, const Move& move);
 }

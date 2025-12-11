@@ -12,7 +12,10 @@ chess::Position reciveInput( std::string& out ){
     std::cin >> out;
     if(out == "q")
         g_bQuit = true;
-    return chess::Position( toupper( out[0] ) - 'A', atoi( out.c_str() ));
+
+
+    char c = out[1];
+    return chess::Position( toupper( out[0] ) - 'A', atoi( out.c_str() + (&c - &out[0])) - 1);
 }
 
 bool moveAusführen(chess::Board& board){
@@ -27,6 +30,8 @@ bool moveAusführen(chess::Board& board){
     chess::Position desiredPosition = reciveInput(input);
 
     chess::Move move(piecePosition, desiredPosition, g_eCurrColor);
+
+    std::cout << move << "\n";
 
     return board.makeMove(move);
 }

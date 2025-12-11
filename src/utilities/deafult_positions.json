@@ -2,12 +2,12 @@
 {
     "GameState" : 
     {
-        "HasWhiteKingMoved" : false,
+        "hasWhiteKingMoved" : false,
         "isWhiteKingInCheck" : false,
         "hasWhiteARookMoved" : false,
         "hasWhiteHRookMoved" : false,
 
-        "HasBlackKingMoved": false,
+        "hasBlackKingMoved": false,
         "isBlackKingInCheck": false,
         "hasBlackARookMoved" : false,
         "hasBlackHRookMoved" : false
