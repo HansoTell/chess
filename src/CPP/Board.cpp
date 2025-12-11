@@ -248,10 +248,8 @@ namespace chess{
         {
         case NORMAL:
             return simulateNormalMove(move);
-        
         case EN_PASSANT:
             return simulateEnPassantMove(move);
-        
         case CASTEL:
             return simulateCastelingMove(move);
          
@@ -285,14 +283,17 @@ namespace chess{
     ChangedPieces Board::simulateEditBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
 
         GameFigure* capturedFigure = (capturedFigure_ptr) ? (*capturedFigure_ptr) : nullptr;
+        GameFigure* movedFigure = (movedFigure_ptr) ? (*movedFigure_ptr) : nullptr;
 
         if(capturedFigure_ptr)
             (*capturedFigure_ptr) = nullptr;
 
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
-        (*movedFigure_ptr) = nullptr;
 
-        return ChangedPieces( (*movedFigure_ptr), capturedFigure , nullptr );
+        if(movedFigure_ptr)
+            (*movedFigure_ptr) = nullptr;
+
+        return ChangedPieces( movedFigure, capturedFigure , nullptr );
     }
 
     MoveResult Board::isMoveLegal(const Move& move) const{
