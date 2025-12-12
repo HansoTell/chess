@@ -37,6 +37,10 @@ namespace chess{
                         EnPassantRow == move.m_PiecePosition.y; 
         }
         static bool isPathClear(const Move& Move, const BoardView& BoardView, int stepX, int stepY){
+            const GameFigure* pFigureAtDesiredPos = BoardView.getFigureAt(Move.m_DesiredPosition);
+            if(pFigureAtDesiredPos && pFigureAtDesiredPos->getColor() == Move.m_PlayerColor)
+                return false;
+            
             int x = Move.m_PiecePosition.x + stepX;
             int y = Move.m_PiecePosition.y + stepY;
 
