@@ -204,10 +204,9 @@ namespace chess{
         
 
         FigureType movedFigureType = m_BoardView.getFigureAt(move.m_PiecePosition)->getFigureType();
-        std::optional<GameFigure> capturedFigure = executeMove(move, moveResult, promotedFigureType);
+        const GameFigure* capturedFigure = executeMove(move, moveResult, promotedFigureType);
 
-        const GameFigure* capturedFigure_ptr = (capturedFigure.has_value()) ? &capturedFigure.value() : nullptr;
-        updateGameState(capturedFigure_ptr, move, moveResult.m_MoveType, movedFigureType);
+        updateGameState(capturedFigure, move, moveResult.m_MoveType, movedFigureType);
 
         return true;
     }
@@ -224,7 +223,7 @@ namespace chess{
             m_GameState.toggleKingInCheck(opposite(move.m_PlayerColor));
     }
 
-    std::optional<GameFigure> Board::executeMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType){
+    const GameFigure* Board::executeMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType){
         switch (moveResult.m_MoveType.value())
         {
         case NORMAL:
@@ -260,24 +259,16 @@ namespace chess{
         return ChangedPieces(nullptr, nullptr, nullptr);
     }
 
-    std::optional<GameFigure> Board::editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
-        std::optional<GameFigure> capturedFigure = {};
-
-        if( capturedFigure_ptr ){
-            auto capturedFigure_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
-            if(capturedFigure_IT != m_Figures.end()){
-                capturedFigure = std::move(*capturedFigure_IT);
-                m_Figures.erase(capturedFigure_IT);
-            }
-        }
+    const GameFigure* Board::editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
+        const GameFigure* pCapturedFigure = (capturedFigure_ptr) ? (*capturedFigure_ptr) : nullptr;
 
         (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
-        if(capturedFigure_ptr)
+        if( pCapturedFigure )
             (*capturedFigure_ptr) = nullptr;
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
         (*movedFigure_ptr) = nullptr;
 
-        return capturedFigure;
+        return pCapturedFigure;
     }
 
     ChangedPieces Board::simulateEditBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
@@ -390,14 +381,14 @@ namespace chess{
         }
     }
 
-    std::optional<GameFigure> Board::ExecuteNormalMove(const Move& move){
+    const GameFigure* Board::ExecuteNormalMove(const Move& move){
 
         GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
         GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
 
         return editBoard(movedFigure_ptr, capturedFigure_ptr, move);
     }
-    std::optional<GameFigure> Board::ExecuteCastelingMove(const Move& move){
+    const GameFigure* Board::ExecuteCastelingMove(const Move& move){
 
         bool shortCastle = (move.getXOffSet() > 0); 
         Position rook_Position = (shortCastle) ? Position(7, move.m_PiecePosition.y): Position(0, move.m_PiecePosition.y);
@@ -414,9 +405,9 @@ namespace chess{
         m_BoardPositions[rook_DesiredPosition.index()] = *moved_Rook;
         (*moved_Rook)=nullptr;
 
-        return {};
+        return nullptr;
     }
-    std::optional<GameFigure> Board::ExecuteEnPassantMove(const Move& move){
+    const GameFigure* Board::ExecuteEnPassantMove(const Move& move){
         int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
         Position capturedFigurePosition(move.m_DesiredPosition.x, move.m_DesiredPosition.y - movementDirection);
         GameFigure** movedFigure_ptr = &m_BoardPositions[move.m_PiecePosition.index()];
@@ -424,25 +415,25 @@ namespace chess{
 
         return editBoard(movedFigure_ptr, capturedFigure_ptr, move);
     }
-    std::optional<GameFigure> Board::ExecutePromotingMove(const Move& move, FigureType promotedFigureType){
-        std::optional<GameFigure> capturedFigure = {};
-
+    const GameFigure* Board::ExecutePromotingMove(const Move& move, FigureType promotedFigureType){
+        //590 mal potenteiell nullptr dereferenziert --> masterclass
+        
         GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
         GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
 
-
-        capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
+        const GameFigure* capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
         Position promotionPosition = move.m_DesiredPosition;
 
         GameFigure promotedFigure = GameFigureFactory(promotedFigureType, move.m_PlayerColor, promotionPosition);
 
+        //Warum remove ich threats der captured Figure müsste ich nicht die der movedFigure bearbeiten?? --> Weil captured sollte doch später entfernt werden
         auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
-        if(deltePawn_IT != m_Figures.end()){
+        if(deltePawn_IT != m_Figures.end())
             removeOldThreats(*capturedFigure_ptr);
-            m_Figures.erase(deltePawn_IT);
-        }
+        
 
         m_Figures.push_back(std::move(promotedFigure));
+        //warum???
         (*capturedFigure_ptr) = &m_Figures.back();
 
         return capturedFigure;

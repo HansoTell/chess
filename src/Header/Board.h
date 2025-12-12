@@ -30,6 +30,8 @@ namespace chess
     //isMoveLegal() umstellen nur von der gezougenen figur wird geguckt ob bei geogener figr move im move cache
     //make move bleibt fast gleich nur would be in check bleibt weg
     //eigentlich performance schlechter aber glaube auch für ai sinnvoll und für gui wäre auch sinnvoller
+    
+    //ausgeschiedene Figuren müssen auf set incaktiove gesetzte werden oder so ka weil soinst vor allem mit figure finden könnte probleme machen und update threats und so
 
 
     class Board
@@ -66,12 +68,12 @@ namespace chess
             void removeOldThreats(const GameFigure* figure);
             void refreshThreats(GameFigure* figure);
 
-        std::optional<GameFigure> executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);
-            std::optional<GameFigure> ExecuteNormalMove(const Move& move);
-            std::optional<GameFigure>ExecuteCastelingMove(const Move& move);
-            std::optional<GameFigure> ExecuteEnPassantMove(const Move& move);
-            std::optional<GameFigure>ExecutePromotingMove(const Move& move, FigureType promotedFigureType);
-        std::optional<GameFigure> editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
+        const GameFigure* executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);
+            const GameFigure* ExecuteNormalMove(const Move& move);
+            const GameFigure* ExecuteCastelingMove(const Move& move);
+            const GameFigure* ExecuteEnPassantMove(const Move& move);
+            const GameFigure* ExecutePromotingMove(const Move& move, FigureType promotedFigureType);
+        const GameFigure* editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
 
 
         CachedThreats simulateUpdateThreatendSquares(GameFigure* capturedFigure, const Move& move);

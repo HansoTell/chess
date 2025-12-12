@@ -18,7 +18,6 @@ namespace chess{
     {
     private:
         Color m_Color;
-        char m_FigureChar;   
         Position m_Position;
         std::unique_ptr<MovementLogic> m_MovmentLogic;
         FigureType m_FigureType;
