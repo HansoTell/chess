@@ -87,7 +87,7 @@ namespace chess
             ChangedPieces simulateEnPassantMove(const Move& move);
             ChangedPieces simulatePromotingMove(const Move& move);
         ChangedPieces simulateEditBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move);
-        void revertSimulatedMove(const ChangedPieces changedPieces);
+        void revertSimulatedMove(const Move& move, const ChangedPieces changedPieces);
             void placeFigureOnBoard(GameFigure* figureToPlace);
     };
 }

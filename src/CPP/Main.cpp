@@ -31,8 +31,6 @@ bool moveAusführen(chess::Board& board){
 
     chess::Move move(piecePosition, desiredPosition, g_eCurrColor);
 
-    std::cout << move << "\n";
-
     return board.makeMove(move);
 }
 

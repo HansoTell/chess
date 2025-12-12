@@ -272,8 +272,8 @@ namespace chess{
         }
 
         (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
-
-        (*capturedFigure_ptr) = nullptr;
+        if(capturedFigure_ptr)
+            (*capturedFigure_ptr) = nullptr;
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
         (*movedFigure_ptr) = nullptr;
 
@@ -338,21 +338,27 @@ namespace chess{
 
         bool wouldbeChecked = isInCheck(move.m_PlayerColor);
 
-        revertSimulatedMove(changedPieces);
+        revertSimulatedMove(move, changedPieces);
         revertSimulatedThreats(cachedThreats);
 
         return wouldbeChecked;
     }
 
-    void Board::revertSimulatedMove(const ChangedPieces changedPieces){
+    void Board::revertSimulatedMove(const Move& move, const ChangedPieces changedPieces){
+        if(changedPieces.m_MovedPiece){
+            placeFigureOnBoard(changedPieces.m_MovedPiece);
+            m_BoardPositions[move.m_DesiredPosition.index()] = nullptr;
+        }
         if(changedPieces.m_CapturedPiece)
             placeFigureOnBoard(changedPieces.m_CapturedPiece);
         
-        if(changedPieces.m_MovedPiece)
-            placeFigureOnBoard(changedPieces.m_MovedPiece);
-        
-        if(changedPieces.m_CastelingRook)
+        if(changedPieces.m_CastelingRook){
             placeFigureOnBoard(changedPieces.m_CastelingRook);
+            int row = (move.m_PlayerColor) ? 0 : 7;
+            int castleDirection = (move.getXOffSet() > 0) ? 5 : 3;
+            Position rookToRemove(castleDirection, row);
+            m_BoardPositions[rookToRemove.index()] = nullptr;
+        }
     }
 
     void Board::placeFigureOnBoard(GameFigure* figureToPlace){
