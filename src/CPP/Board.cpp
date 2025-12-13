@@ -22,7 +22,7 @@ namespace chess{
         m_BoardView(&m_BoardPositions), 
         m_BoardPrinter(std::move(boardPrinter)) 
     {
-        m_Figures.reserve(32);
+        m_Figures.reserve(40);
 
         const json gameConifg = parseJson(file);
 
@@ -50,12 +50,14 @@ namespace chess{
 
     void Board::threatendSquaresInit(){
         for(auto& figure : m_Figures){
-            figure.updateThreats(m_BoardView);
-            Color figureColor = figure.getColor();
+            if( figure.getIsActive() ){
+                figure.updateThreats(m_BoardView);
+                Color figureColor = figure.getColor();
 
-            std::vector<Position>& overallThreats = m_GameState.getThreatendSquares(figureColor);
-            const std::vector<Position>& figureThreats = figure.getThreatendSquares();
-            overallThreats.insert(overallThreats.end(), figureThreats.begin(), figureThreats.end());
+                std::vector<Position>& overallThreats = m_GameState.getThreatendSquares(figureColor);
+                const std::vector<Position>& figureThreats = figure.getThreatendSquares();
+                overallThreats.insert(overallThreats.end(), figureThreats.begin(), figureThreats.end());
+            }
         }
     }
 
@@ -72,10 +74,10 @@ namespace chess{
         }
 
         for(auto& figure : m_Figures){
-            if(figure.getMovementType() == SLIDING && 
+            if( figure.getIsActive() &&  figure.getMovementType() == SLIDING && 
                     (isInRay(move.m_PiecePosition, figure.getPosition()) 
                     || isInRay(move.m_DesiredPosition, figure.getPosition()) 
-                    || (capturedFigure && isInRay(capturedFigure->getPosition(), figure.getPosition()))))
+                    || (capturedFigure && isInRay(capturedFigure->getPosition(), figure.getPosition()))) )
             {
                 GameFigure* figure_ptr = &figure;
                 removeOldThreats(figure_ptr);
@@ -105,7 +107,7 @@ namespace chess{
         }
 
         for(auto& figure : m_Figures){
-            if(figure.getMovementType() == SLIDING && 
+            if(figure.getIsActive() &&  figure.getMovementType() == SLIDING && 
                     (isInRay(move.m_PiecePosition, figure.getPosition()) 
                     || isInRay(move.m_DesiredPosition, figure.getPosition()) 
                     || (capturedFigure && isInRay(capturedFigure->getPosition(), figure.getPosition()))))
@@ -263,8 +265,10 @@ namespace chess{
         const GameFigure* pCapturedFigure = (capturedFigure_ptr) ? (*capturedFigure_ptr) : nullptr;
 
         (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
-        if( pCapturedFigure )
+        if( pCapturedFigure ){
+            (**capturedFigure_ptr).setIsActiveTrue();
             (*capturedFigure_ptr) = nullptr;
+        }
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
         (*movedFigure_ptr) = nullptr;
 
@@ -416,25 +420,19 @@ namespace chess{
         return editBoard(movedFigure_ptr, capturedFigure_ptr, move);
     }
     const GameFigure* Board::ExecutePromotingMove(const Move& move, FigureType promotedFigureType){
-        //590 mal potenteiell nullptr dereferenziert --> masterclass
-        
-        GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
-        GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
 
-        const GameFigure* capturedFigure = editBoard(movedFigure_ptr, capturedFigure_ptr, move);
-        Position promotionPosition = move.m_DesiredPosition;
+        const GameFigure* capturedFigure = ExecuteNormalMove(move); 
 
-        GameFigure promotedFigure = GameFigureFactory(promotedFigureType, move.m_PlayerColor, promotionPosition);
+        const GameFigure* pDesiredPos = m_BoardPositions[move.m_DesiredPosition.index()];
 
-        //Warum remove ich threats der captured Figure müsste ich nicht die der movedFigure bearbeiten?? --> Weil captured sollte doch später entfernt werden
-        auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (**capturedFigure_ptr));
+        const GameFigure promotedFigure = GameFigureFactory(promotedFigureType, move.m_PlayerColor, move.m_DesiredPosition);
+
+        auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (*pDesiredPos));
         if(deltePawn_IT != m_Figures.end())
-            removeOldThreats(*capturedFigure_ptr);
+            removeOldThreats(pDesiredPos);
         
-
         m_Figures.push_back(std::move(promotedFigure));
-        //warum???
-        (*capturedFigure_ptr) = &m_Figures.back();
+        m_BoardPositions[move.m_DesiredPosition.index()] = &m_Figures.back();
 
         return capturedFigure;
     }

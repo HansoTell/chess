@@ -8,12 +8,15 @@ namespace chess{
         m_Position(pos), 
         m_MovmentLogic(std::move(MovementLogic)), 
         m_FigureType(figureType), 
-        m_MovementType(movementType)
+        m_MovementType(movementType),
+        m_isActive(true)
         {}
     GameFigure::GameFigure(const GameFigure& other) : 
         m_Color(other.m_Color), 
         m_Position(other.m_Position), 
-        m_MovmentLogic(other.m_MovmentLogic ? other.m_MovmentLogic->clone() : nullptr)
+        m_MovmentLogic(other.m_MovmentLogic ? other.m_MovmentLogic->clone() : nullptr),
+        m_isActive(other.m_isActive),
+        m_Threats(other.m_Threats)
         {}
     GameFigure::GameFigure(GameFigure&& other) : 
         m_Color(other.m_Color), 
@@ -21,14 +24,35 @@ namespace chess{
         m_MovmentLogic(std::move(other.m_MovmentLogic)),
         m_FigureType(other.m_FigureType),
         m_MovementType(other.m_MovementType),
-        m_Threats(std::move(other.m_Threats))
+        m_Threats(std::move(other.m_Threats)),
+        m_isActive(other.m_isActive)
     {
         other.m_Color = WHITE;
         other.m_Position.x = 0;
         other.m_Position.y = 0;
     }
 
-    GameFigure GameFigureFactory(FigureType figureType, Color Color, Position& pos){
+    bool GameFigure::operator==(const GameFigure& other) const{
+        if(m_Color != other.m_Color)
+            return false;
+
+        if(m_FigureType != other.m_FigureType)
+            return false;
+
+        if(m_MovementType != other.m_MovementType)
+            return false;
+
+        if(m_Position != other.m_Position)
+            return false;
+
+        if(m_isActive!= other.m_isActive)
+            return false;
+
+        return true;
+    }
+
+
+    GameFigure GameFigureFactory(FigureType figureType, Color Color, Position pos){
         switch (figureType)
         {
         case PAWN:

@@ -23,6 +23,7 @@ namespace chess{
         FigureType m_FigureType;
         MovementTypes m_MovementType;
         std::vector<Position> m_Threats;
+        bool m_isActive;
 
     public:
         GameFigure(Color Color, Position& pos, std::unique_ptr<MovementLogic> MovmentLogic, FigureType figureType, MovementTypes movementType);
@@ -30,12 +31,15 @@ namespace chess{
         GameFigure(GameFigure&& other);
         ~GameFigure() = default;
         GameFigure& operator=(GameFigure&& other) = default;
-        bool operator==(const GameFigure& other) const {return this->m_Position == other.m_Position; }
+        bool operator==(const GameFigure& other) const; 
     public:
         MoveResult isMoveLegal(const Move& move, const BoardView& boardView, const GameState& GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
         void updateThreats(const BoardView& BoardView) { m_Threats =  m_MovmentLogic->getThreatendSquares(m_Position, BoardView, m_Color); }
         void setThreats(std::vector<Position>& threats) { m_Threats = threats; }
     public:
+        void setIsActiveTrue() { m_isActive = true; }
+
+        bool getIsActive() const { return m_isActive; }
         MovementTypes getMovementType() const { return m_MovementType; }
         FigureType getFigureType() const { return m_FigureType; }
         const Position& getPosition() const { return m_Position; }
@@ -47,5 +51,5 @@ namespace chess{
     };
 
 
-    GameFigure GameFigureFactory(FigureType figureType, Color color, Position& pos);
+    GameFigure GameFigureFactory(FigureType figureType, Color color, Position pos);
 }
