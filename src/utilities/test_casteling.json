@@ -1,0 +1,27 @@
+{
+    "GameState" : 
+    {
+        "hasWhiteKingMoved" : false,
+        "isWhiteKingInCheck" : false,
+        "hasWhiteARookMoved" : false,
+        "hasWhiteHRookMoved" : false,
+
+        "hasBlackKingMoved": false,
+        "isBlackKingInCheck": false,
+        "hasBlackARookMoved" : false,
+        "hasBlackHRookMoved" : false
+
+    },
+
+    "figure_positions": 
+    {
+        "Rook" :{"FigureType" : "ROOK", "WHITE" :[[0,0], [7,0]], "BLACK" : [[7,7], [0,7]] },
+        "Bishop" : {"FigureType" : "BISHOP", "WHITE" : [], "BLACK" : [[5,7], [2,7]]},
+        "Knight" : {"FigureType" : "KNIGHT", "WHITE" : [], "BLACK" : [[6,7], [1,7]]},
+        "Queen" : {"FigureType" : "QUEEN", "WHITE" : [], "BLACK" : [[3,7] ]},
+        "King" : {"FigureType" : "KING",  "WHITE" : [[4,0]], "BLACK" : [[4,7] ]},
+        "Pawn" : {"FigureType" : "PAWN",  "WHITE" : [[0,1], [1,1], [2,1], [3,1], [4,1], [5,1], [6,1], [7,1]], 
+                                                "BLACK" : [[0,6], [1,6], [2, 6], [3,6], [4,6], [5,6], [6,6], [7,6] ]}
+    }
+    
+}

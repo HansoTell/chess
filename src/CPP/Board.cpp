@@ -175,6 +175,7 @@ namespace chess{
     }
 
     void Board::addFigureOffJson(const json& posData, FigureType figureType, Color color){
+        //check das jeweils ein König da ist und auch nur genau einer
 
         for(auto& figure_Position_Black : posData){
 
@@ -449,13 +450,16 @@ namespace chess{
         GameFigure** moved_King = &m_BoardPositions[move.m_PiecePosition.index()];
         GameFigure** moved_Rook = &m_BoardPositions[rook_Position.index()];
 
+        GameFigure* pMovedKing = (*moved_King);
+        GameFigure* pMovedRook = (*moved_Rook);
+
         m_BoardPositions[move.m_DesiredPosition.index()] = *moved_King;
         (*moved_King)=nullptr;
 
         m_BoardPositions[rook_DesiredPosition.index()] = *moved_Rook;
         (*moved_Rook)=nullptr;
 
-        return ChangedPieces( (*moved_King), nullptr , (*moved_Rook) );
+        return ChangedPieces( pMovedKing, nullptr , pMovedRook );
     }
     ChangedPieces Board::simulateEnPassantMove(const Move& move){
         int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
