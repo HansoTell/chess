@@ -51,6 +51,11 @@ namespace chess{
         return true;
     }
 
+    std::ostream& operator<<(std::ostream& os, const GameFigure& figure){
+        os << "Color: " << figure.getColor() << " Type: " << figure.getFigureType() << " MovementType: " << figure.getMovementType() << " Position: " << figure.getPosition() << " Aktive: " << figure.getIsActive();
+        return os;
+    }
+
 
     GameFigure GameFigureFactory(FigureType figureType, Color Color, Position pos){
         switch (figureType)

@@ -36,7 +36,7 @@ bool moveAusführen(chess::Board& board){
 
 
 int main(){
-    std::string source ="src/utilities/test_casteling.json"; 
+    std::string source ="src/utilities/test_promoting.json"; 
     chess::Board board(source, std::make_unique<chess::ASCIIPrinter>());
 
     board.printBoard();

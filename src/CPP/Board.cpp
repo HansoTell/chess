@@ -267,7 +267,7 @@ namespace chess{
 
         (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
         if( pCapturedFigure ){
-            (**capturedFigure_ptr).setIsActiveTrue();
+            (**capturedFigure_ptr).setIsActiveFalse();
             (*capturedFigure_ptr) = nullptr;
         }
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
@@ -424,14 +424,15 @@ namespace chess{
 
         const GameFigure* capturedFigure = ExecuteNormalMove(move); 
 
-        const GameFigure* pDesiredPos = m_BoardPositions[move.m_DesiredPosition.index()];
+        GameFigure* pDesiredPos = m_BoardPositions[move.m_DesiredPosition.index()];
 
-        const GameFigure promotedFigure = GameFigureFactory(promotedFigureType, move.m_PlayerColor, move.m_DesiredPosition);
+        GameFigure promotedFigure = GameFigureFactory(promotedFigureType, move.m_PlayerColor, move.m_DesiredPosition);
 
         auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (*pDesiredPos));
-        if(deltePawn_IT != m_Figures.end())
+        if(deltePawn_IT != m_Figures.end()){
+            pDesiredPos->setIsActiveFalse();
             removeOldThreats(pDesiredPos);
-        
+        }
         m_Figures.push_back(std::move(promotedFigure));
         m_BoardPositions[move.m_DesiredPosition.index()] = &m_Figures.back();
 

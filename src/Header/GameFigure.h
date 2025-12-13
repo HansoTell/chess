@@ -37,7 +37,7 @@ namespace chess{
         void updateThreats(const BoardView& BoardView) { m_Threats =  m_MovmentLogic->getThreatendSquares(m_Position, BoardView, m_Color); }
         void setThreats(std::vector<Position>& threats) { m_Threats = threats; }
     public:
-        void setIsActiveTrue() { m_isActive = true; }
+        void setIsActiveFalse() { m_isActive = false; }
 
         bool getIsActive() const { return m_isActive; }
         MovementTypes getMovementType() const { return m_MovementType; }
@@ -50,6 +50,7 @@ namespace chess{
 
     };
 
+    std::ostream& operator<<(std::ostream& os, const GameFigure& figure);
 
     GameFigure GameFigureFactory(FigureType figureType, Color color, Position pos);
 }
