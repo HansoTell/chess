@@ -125,7 +125,7 @@ namespace chess{
     }
 
     void Board::removeOldThreats(const GameFigure* figure){
-        const auto& old_Figure_Threats = figure->getThreatendSquares();
+        const auto old_Figure_Threats = figure->getThreatendSquares();
 
         m_GameState.removeThreatsFormThreatMap(old_Figure_Threats, figure->getColor());
     }    
@@ -142,9 +142,9 @@ namespace chess{
         const auto& old_Figure_Threats = figure->getThreatendSquares();
 
         if(figure->getColor() == WHITE){
-            cachedThreats.removedThreatsWhite.emplace_back(figure, figure->getThreatendSquares());
+            cachedThreats.removedThreatsWhite.emplace_back(figure, figure->getThreatendCopySquares());
         }else{
-            cachedThreats.removedThreatsBlack.emplace_back(figure, figure->getThreatendSquares());
+            cachedThreats.removedThreatsBlack.emplace_back(figure, figure->getThreatendCopySquares());
         }
 
         m_GameState.removeThreatsFormThreatMap(old_Figure_Threats, figure->getColor());
@@ -332,9 +332,9 @@ namespace chess{
         const ChangedPieces changedPieces = simulateMove(move, moveResult, {});
 
         /////////////////////////////
-        std::cout << "Pre simulate: " << move.m_PlayerColor <<"\n";
+        std::cout << "Pre simulate: " << move.m_PlayerColor << " " << m_GameState.getThreatendSquares(move.m_PlayerColor).size() << "\n";
         m_BoardPrinter->debugThreatPrinter(m_GameState, move.m_PlayerColor);
-        std::cout << opposite(move.m_PlayerColor) << "\n";
+        std::cout << opposite(move.m_PlayerColor) << " " << m_GameState.getThreatendSquares(move.m_PlayerColor).size() << "\n";
         m_BoardPrinter->debugThreatPrinter(m_GameState, opposite(move.m_PlayerColor));
         std::cout << "\n";
         ////////////////////////////////////
@@ -342,9 +342,9 @@ namespace chess{
         const CachedThreats cachedThreats = simulateUpdateThreatendSquares(changedPieces.m_CapturedPiece , move);
 
         /////////////////////////////
-        std::cout << "Post Simulate pre refert "<< move.m_PlayerColor <<"\n";
+        std::cout << "Post Simulate pre refert "<< move.m_PlayerColor << " " << m_GameState.getThreatendSquares(move.m_PlayerColor).size() << "\n";
         m_BoardPrinter->debugThreatPrinter(m_GameState, move.m_PlayerColor);
-        std::cout << opposite(move.m_PlayerColor) << "\n";
+        std::cout << opposite(move.m_PlayerColor) << " " << m_GameState.getThreatendSquares(move.m_PlayerColor).size() << "\n";
         m_BoardPrinter->debugThreatPrinter(m_GameState, opposite(move.m_PlayerColor));
         std::cout << "\n";
         ////////////////////////////////////
@@ -352,14 +352,6 @@ namespace chess{
 
         revertSimulatedMove(move, changedPieces);
         revertSimulatedThreats(cachedThreats);
-
-        /////////////////////////////
-        std::cout << "Post revert " << move.m_PlayerColor <<"\n";
-        m_BoardPrinter->debugThreatPrinter(m_GameState, move.m_PlayerColor);
-        std::cout << opposite(move.m_PlayerColor) << "\n";
-        m_BoardPrinter->debugThreatPrinter(m_GameState, opposite(move.m_PlayerColor));
-        std::cout << "\n";
-        ////////////////////////////////////
 
         return wouldbeChecked;
     }
