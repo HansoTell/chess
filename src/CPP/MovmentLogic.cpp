@@ -239,9 +239,15 @@ namespace chess{
         int direction = (color == WHITE) ? 1 : -1;
         std::vector<Position> threats;
         threats.reserve(4);
+        Position rightThreat(figPos.x+1, figPos.y+direction);
+        Position leftThreat(figPos.x-1, figPos.y+direction);
 
-        threats.emplace_back(figPos.x+1, figPos.y+direction);
-        threats.emplace_back(figPos.x-1, figPos.y+direction);
+        if( !isPositionOutOfBounds(rightThreat) )
+            threats.emplace_back(figPos.x+1, figPos.y+direction);
+
+        if( !isPositionOutOfBounds(leftThreat) )
+            threats.emplace_back(figPos.x-1, figPos.y+direction);
+
 
         int EnPassantRow = (color == WHITE) ? 4 : 3;
         

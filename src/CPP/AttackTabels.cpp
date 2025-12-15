@@ -19,13 +19,13 @@ namespace chess{
         template<size_t T>
         void createTabel(std::array<std::vector<Position>, 64>& attackTabel, const std::array<std::pair<int,int>, T>& offsetTabel){
             for(int i = 0; i < attackTabel.size(); i++){
-                int x = i / 8;
-                int y = i % 8;
+                int x = i % 8;
+                int y = i / 8;
                 for(auto& [dx, dy] : offsetTabel){
                     int offsetX = x + dx;
                     int offsetY = y + dy;
                     if(offsetX >= 0 && offsetX < 8 && offsetY >= 0 && offsetY < 8)
-                        attackTabel[i].emplace_back(x, y); 
+                        attackTabel[i].emplace_back(offsetX, offsetY); 
                 }
             }
         }

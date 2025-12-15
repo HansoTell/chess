@@ -16,6 +16,7 @@
 #include "MoveResult.h"
 #include "BoardPrinter.h"
 #include "CachedThreats.h"
+#include "AttackTabels.h"
 
 using json = nlohmann::json;
 namespace chess

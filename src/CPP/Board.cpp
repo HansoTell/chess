@@ -26,6 +26,7 @@ namespace chess{
 
         const json gameConifg = parseJson(file);
 
+        AttackTabels::initAttackTabels();
         boardinit(gameConifg);
         gameStateInit(gameConifg);   
     }
@@ -56,6 +57,7 @@ namespace chess{
 
                 std::vector<Position>& overallThreats = m_GameState.getThreatendSquares(figureColor);
                 const std::vector<Position>& figureThreats = figure.getThreatendSquares();
+                
                 overallThreats.insert(overallThreats.end(), figureThreats.begin(), figureThreats.end());
             }
         }

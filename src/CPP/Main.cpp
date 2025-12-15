@@ -36,7 +36,7 @@ bool moveAusführen(chess::Board& board){
 
 
 int main(){
-    std::string source ="src/utilities/test_pinning.json"; 
+    std::string source ="src/utilities/test_check1.json"; 
     chess::Board board(source, std::make_unique<chess::ASCIIPrinter>());
 
     board.printBoard();

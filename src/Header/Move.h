@@ -18,6 +18,8 @@ namespace chess{
         int index() const { return x + y * boardWidth; }
     };
 
+    bool isPositionOutOfBounds(Position pos); 
+
     std::ostream& operator<<(std::ostream& os, const Position& position);
 
     struct Move{
