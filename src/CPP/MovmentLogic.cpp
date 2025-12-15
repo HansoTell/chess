@@ -37,6 +37,11 @@ namespace chess{
                         EnPassantRow == move.m_PiecePosition.y; 
         }
         static bool isPathClear(const Move& Move, const BoardView& BoardView, int stepX, int stepY){
+            const GameFigure* pFigureAtDesiredPos = BoardView.getFigureAt(Move.m_DesiredPosition);
+
+            if(pFigureAtDesiredPos && pFigureAtDesiredPos->getColor() == Move.m_PlayerColor)
+                return false;
+            
             int x = Move.m_PiecePosition.x + stepX;
             int y = Move.m_PiecePosition.y + stepY;
 
@@ -49,18 +54,32 @@ namespace chess{
 
             return true;
         }
+        static bool isCastelingPathClear(const Move& Move, const BoardView& BoardView, int stepX, int stepY){
+
+            int x = Move.m_PiecePosition.x + stepX;
+            int y = Move.m_PiecePosition.y + stepY;
+
+            while(x != Move.m_DesiredPosition.x || y != Move.m_DesiredPosition.y){
+                if(BoardView.getFigureAt({ x, y }))
+                    return false;
+                x+=stepX;
+                y+=stepY;
+            }
+
+            return true;
+        }
+
         static bool isCastle(const Move& move, const BoardView& BoardView, const GameState& GameState){
             if(move.getYOffSet() !=0 || abs(move.getXOffSet()) != 2)
                 return false;
 
-
-            bool isShortCastle = move.getXOffSet() < 0;
+            bool isShortCastle = move.getXOffSet() > 0;
             int stepX = (isShortCastle) ? 1 : -1;
             int stepY = 0;
             Move moveCopy = move;
             
             moveCopy.m_DesiredPosition = isShortCastle ?  Position(move.m_DesiredPosition.x + 1, move.m_DesiredPosition.y) : Position(move.m_DesiredPosition.x - 2, move.m_DesiredPosition.y);
-            if(!isPathClear(moveCopy, BoardView, stepX, stepY))
+            if(!isCastelingPathClear(moveCopy, BoardView, stepX, stepY))
                return false;
 
                
@@ -220,9 +239,15 @@ namespace chess{
         int direction = (color == WHITE) ? 1 : -1;
         std::vector<Position> threats;
         threats.reserve(4);
+        Position rightThreat(figPos.x+1, figPos.y+direction);
+        Position leftThreat(figPos.x-1, figPos.y+direction);
 
-        threats.emplace_back(figPos.x+1, figPos.y+direction);
-        threats.emplace_back(figPos.x-1, figPos.y+direction);
+        if( !isPositionOutOfBounds(rightThreat) )
+            threats.emplace_back(figPos.x+1, figPos.y+direction);
+
+        if( !isPositionOutOfBounds(leftThreat) )
+            threats.emplace_back(figPos.x-1, figPos.y+direction);
+
 
         int EnPassantRow = (color == WHITE) ? 4 : 3;
         

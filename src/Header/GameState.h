@@ -2,9 +2,12 @@
 #include <vector>
 #include <optional>
 #include <nlohmann/json.hpp>
+
 #include "Color.h"
 #include "Move.h"
 #include "FigureTypes.h"
+
+#include <iostream>
 
 
 using json = nlohmann::json;
