@@ -56,6 +56,7 @@ namespace chess{
                 Color figureColor = figure.getColor();
 
                 std::vector<Position>& overallThreats = m_GameState.getThreatendSquares(figureColor);
+
                 const std::vector<Position>& figureThreats = figure.getThreatendSquares();
                 
                 overallThreats.insert(overallThreats.end(), figureThreats.begin(), figureThreats.end());
@@ -196,9 +197,8 @@ namespace chess{
 
         MoveResult moveResult = isMoveLegal(move);
 
-        if(!moveResult.m_IsMoveLegal){
+        if(!moveResult.m_IsMoveLegal)
             return false;
-        }
 
         if(wouldBeInCheck(move, moveResult))
             return false;
@@ -207,7 +207,6 @@ namespace chess{
         if(moveResult.m_MoveType == PROMOTING)
             promotedFigureType = m_BoardPrinter->getPromotionFigure();
         
-
         FigureType movedFigureType = m_BoardView.getFigureAt(move.m_PiecePosition)->getFigureType();
         const GameFigure* capturedFigure = executeMove(move, moveResult, promotedFigureType);
 
@@ -332,12 +331,35 @@ namespace chess{
     bool Board::wouldBeInCheck(const Move& move, MoveResult moveResult){
         const ChangedPieces changedPieces = simulateMove(move, moveResult, {});
 
+        /////////////////////////////
+        std::cout << "Pre simulate: " << move.m_PlayerColor <<"\n";
+        m_BoardPrinter->debugThreatPrinter(m_GameState, move.m_PlayerColor);
+        std::cout << opposite(move.m_PlayerColor) << "\n";
+        m_BoardPrinter->debugThreatPrinter(m_GameState, opposite(move.m_PlayerColor));
+        std::cout << "\n";
+        ////////////////////////////////////
+
         const CachedThreats cachedThreats = simulateUpdateThreatendSquares(changedPieces.m_CapturedPiece , move);
 
+        /////////////////////////////
+        std::cout << "Post Simulate pre refert "<< move.m_PlayerColor <<"\n";
+        m_BoardPrinter->debugThreatPrinter(m_GameState, move.m_PlayerColor);
+        std::cout << opposite(move.m_PlayerColor) << "\n";
+        m_BoardPrinter->debugThreatPrinter(m_GameState, opposite(move.m_PlayerColor));
+        std::cout << "\n";
+        ////////////////////////////////////
         bool wouldbeChecked = isInCheck(move.m_PlayerColor);
 
         revertSimulatedMove(move, changedPieces);
         revertSimulatedThreats(cachedThreats);
+
+        /////////////////////////////
+        std::cout << "Post revert " << move.m_PlayerColor <<"\n";
+        m_BoardPrinter->debugThreatPrinter(m_GameState, move.m_PlayerColor);
+        std::cout << opposite(move.m_PlayerColor) << "\n";
+        m_BoardPrinter->debugThreatPrinter(m_GameState, opposite(move.m_PlayerColor));
+        std::cout << "\n";
+        ////////////////////////////////////
 
         return wouldbeChecked;
     }

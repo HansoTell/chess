@@ -25,6 +25,26 @@ namespace chess{
         }
     }
 
+    void ASCIIPrinter::debugThreatPrinter(const GameState& gameState, Color color) const{
+        printHeader();
+        for(int y = 0; y<boardWidth; y++){
+            std::cout << y+1 << " ";
+            for(int x = 0; x<boardWidth;x++){
+                std::cout << " | ";
+                Position curr_pos(x,y);
+                auto& threatMap = gameState.getThreatendSquares(color);
+                if(std::find(threatMap.begin(), threatMap.end(), curr_pos) != threatMap.end()){
+                    std::cout << "XX";
+                }else{
+                    std::cout << "  ";
+                }
+            }
+            std::cout << " |  " << y+1 <<"\n";
+            std::cout << "-----------------------------------------------" << "\n";
+        }
+        printFooter();
+    }
+
     void ASCIIPrinter::printBoard(const BoardView& BoardView)const{
         printHeader();
         for(int y = 0; y<boardWidth; y++){
