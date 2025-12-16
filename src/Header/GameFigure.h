@@ -37,7 +37,7 @@ namespace chess{
         void updateThreats(const BoardView& BoardView) { m_Threats =  m_MovmentLogic->getThreatendSquares(m_Position, BoardView, m_Color); }
         void setThreats(std::vector<Position>& threats) { m_Threats = threats; }
     public:
-        void setIsActiveFalse() { m_isActive = false; }
+        void toggleIsActive() { m_isActive = !m_isActive; }
 
         bool getIsActive() const { return m_isActive; }
         MovementTypes getMovementType() const { return m_MovementType; }

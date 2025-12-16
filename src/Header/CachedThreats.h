@@ -22,11 +22,17 @@ namespace chess{
 
 
     struct ChangedPieces {
-        ChangedPieces(GameFigure* movedPiece, GameFigure* capturedPiece, GameFigure* castelingRook) : 
-                m_MovedPiece(movedPiece), m_CapturedPiece(capturedPiece), m_CastelingRook(castelingRook) {}
+        ChangedPieces(GameFigure* movedPiece, std::optional<Position> movedPiecePos, 
+                      GameFigure* capturedPiece,
+                      GameFigure* castelingRook, std::optional<Position> castelingRookPos) : 
+                m_MovedPiece(movedPiece), m_MovedPiecePos(movedPiecePos), 
+                m_CapturedPiece(capturedPiece), 
+                m_CastelingRook(castelingRook), m_CastelingRookPos(castelingRookPos) {}
 
         GameFigure* m_MovedPiece = nullptr;
+        std::optional<Position> m_MovedPiecePos;
         GameFigure* m_CapturedPiece = nullptr;
         GameFigure* m_CastelingRook = nullptr;
+        std::optional<Position> m_CastelingRookPos;
     };
 }

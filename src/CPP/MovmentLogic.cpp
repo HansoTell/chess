@@ -113,7 +113,7 @@ namespace chess{
         void getSlidingThreats(const BoardView& BoardView, const Position& figPos, std::array<std::pair<int, int> , T> steps, F callback){
             for(auto& [dx, dy] : steps){
                 Position newPos(figPos.x+dx, figPos.y+dy);
-                while(newPos.x >=0 && newPos.x <8 && newPos.y >=0 && newPos.y<8 && !BoardView.getFigureAt(newPos)){
+                while( !isPositionOutOfBounds(newPos) && !BoardView.getFigureAt(newPos)){
                     callback(newPos);
                     newPos.x+=dx;
                     newPos.y+=dy;

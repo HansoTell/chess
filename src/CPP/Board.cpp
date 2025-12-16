@@ -58,7 +58,7 @@ namespace chess{
                 std::vector<Position>& overallThreats = m_GameState.getThreatendSquares(figureColor);
 
                 const std::vector<Position>& figureThreats = figure.getThreatendSquares();
-                
+
                 overallThreats.insert(overallThreats.end(), figureThreats.begin(), figureThreats.end());
             }
         }
@@ -139,7 +139,7 @@ namespace chess{
     }
 
     void Board::simulateRemoveOldThreats(GameFigure* figure, CachedThreats& cachedThreats){
-        const auto& old_Figure_Threats = figure->getThreatendSquares();
+        const auto old_Figure_Threats = figure->getThreatendSquares();
 
         if(figure->getColor() == WHITE){
             cachedThreats.removedThreatsWhite.emplace_back(figure, figure->getThreatendCopySquares());
@@ -255,12 +255,11 @@ namespace chess{
             return simulateEnPassantMove(move);
         case CASTEL:
             return simulateCastelingMove(move);
-         
         case PROMOTING:
             return simulatePromotingMove(move);
         }
 
-        return ChangedPieces(nullptr, nullptr, nullptr);
+        return ChangedPieces(nullptr, {}, nullptr, nullptr, {});
     }
 
     const GameFigure* Board::editBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
@@ -268,7 +267,7 @@ namespace chess{
 
         (*movedFigure_ptr)->setPosition(move.m_DesiredPosition);
         if( pCapturedFigure ){
-            (**capturedFigure_ptr).setIsActiveFalse();
+            (**capturedFigure_ptr).toggleIsActive();
             (*capturedFigure_ptr) = nullptr;
         }
         m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
@@ -278,19 +277,25 @@ namespace chess{
     }
 
     ChangedPieces Board::simulateEditBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
+        //MÜSEN Wwir captured pieces inaktiv setzen??
 
         GameFigure* capturedFigure = (capturedFigure_ptr) ? (*capturedFigure_ptr) : nullptr;
         GameFigure* movedFigure = (movedFigure_ptr) ? (*movedFigure_ptr) : nullptr;
 
-        if(capturedFigure_ptr)
+        std::optional<Position> movedFigurePos = {};
+
+        if(capturedFigure_ptr){
+            capturedFigure->toggleIsActive();
             (*capturedFigure_ptr) = nullptr;
-
-        m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
-
-        if(movedFigure_ptr)
+        }
+        if(movedFigure_ptr){
+            movedFigurePos = movedFigure->getPosition();
+            movedFigure->setPosition(move.m_DesiredPosition);
+            m_BoardPositions[move.m_DesiredPosition.index()] = *movedFigure_ptr;
             (*movedFigure_ptr) = nullptr;
+        }
 
-        return ChangedPieces( movedFigure, capturedFigure , nullptr );
+        return ChangedPieces( movedFigure, movedFigurePos, capturedFigure , nullptr, {} );
     }
 
     MoveResult Board::isMoveLegal(const Move& move) const{
@@ -331,23 +336,8 @@ namespace chess{
     bool Board::wouldBeInCheck(const Move& move, MoveResult moveResult){
         const ChangedPieces changedPieces = simulateMove(move, moveResult, {});
 
-        /////////////////////////////
-        std::cout << "Pre simulate: " << move.m_PlayerColor << " " << m_GameState.getThreatendSquares(move.m_PlayerColor).size() << "\n";
-        m_BoardPrinter->debugThreatPrinter(m_GameState, move.m_PlayerColor);
-        std::cout << opposite(move.m_PlayerColor) << " " << m_GameState.getThreatendSquares(move.m_PlayerColor).size() << "\n";
-        m_BoardPrinter->debugThreatPrinter(m_GameState, opposite(move.m_PlayerColor));
-        std::cout << "\n";
-        ////////////////////////////////////
-
         const CachedThreats cachedThreats = simulateUpdateThreatendSquares(changedPieces.m_CapturedPiece , move);
 
-        /////////////////////////////
-        std::cout << "Post Simulate pre refert "<< move.m_PlayerColor << " " << m_GameState.getThreatendSquares(move.m_PlayerColor).size() << "\n";
-        m_BoardPrinter->debugThreatPrinter(m_GameState, move.m_PlayerColor);
-        std::cout << opposite(move.m_PlayerColor) << " " << m_GameState.getThreatendSquares(move.m_PlayerColor).size() << "\n";
-        m_BoardPrinter->debugThreatPrinter(m_GameState, opposite(move.m_PlayerColor));
-        std::cout << "\n";
-        ////////////////////////////////////
         bool wouldbeChecked = isInCheck(move.m_PlayerColor);
 
         revertSimulatedMove(move, changedPieces);
@@ -357,15 +347,23 @@ namespace chess{
     }
 
     void Board::revertSimulatedMove(const Move& move, const ChangedPieces changedPieces){
-        if(changedPieces.m_MovedPiece){
-            placeFigureOnBoard(changedPieces.m_MovedPiece);
+
+        GameFigure* pMovedPiece = changedPieces.m_MovedPiece;
+        GameFigure* pCapturedPiece = changedPieces.m_CapturedPiece;
+        GameFigure* pCastelingRook = changedPieces.m_CastelingRook;
+
+        if( pMovedPiece && changedPieces.m_MovedPiecePos.has_value() ){
+            pMovedPiece->setPosition(changedPieces.m_MovedPiecePos.value());
+            placeFigureOnBoard(pMovedPiece);
             m_BoardPositions[move.m_DesiredPosition.index()] = nullptr;
         }
-        if(changedPieces.m_CapturedPiece)
-            placeFigureOnBoard(changedPieces.m_CapturedPiece);
-        
-        if(changedPieces.m_CastelingRook){
-            placeFigureOnBoard(changedPieces.m_CastelingRook);
+        if( pCapturedPiece ){
+            pCapturedPiece->toggleIsActive();
+            placeFigureOnBoard(pCapturedPiece);
+        }
+        if( pCastelingRook && changedPieces.m_CastelingRookPos.has_value()){
+            pCastelingRook->setPosition(changedPieces.m_CastelingRookPos.value());
+            placeFigureOnBoard(pCastelingRook);
             int row = (move.m_PlayerColor) ? 0 : 7;
             int castleDirection = (move.getXOffSet() > 0) ? 5 : 3;
             Position rookToRemove(castleDirection, row);
@@ -446,7 +444,7 @@ namespace chess{
 
         auto deltePawn_IT = std::find(m_Figures.begin(), m_Figures.end(), (*pDesiredPos));
         if(deltePawn_IT != m_Figures.end()){
-            pDesiredPos->setIsActiveFalse();
+            pDesiredPos->toggleIsActive();
             removeOldThreats(pDesiredPos);
         }
         m_Figures.push_back(std::move(promotedFigure));
@@ -455,12 +453,14 @@ namespace chess{
         return capturedFigure;
     }
     ChangedPieces Board::simulateNormalMove(const Move& move){
+
         GameFigure** movedFigure_ptr =  &m_BoardPositions[move.m_PiecePosition.index()];
         GameFigure** capturedFigure_ptr = ( m_BoardPositions[move.m_DesiredPosition.index()] ) ? &m_BoardPositions[move.m_DesiredPosition.index()] : nullptr;
         
         return simulateEditBoard(movedFigure_ptr, capturedFigure_ptr, move);
     }
     ChangedPieces Board::simulateCastelingMove(const Move& move){
+
         bool shortCastle = (move.getXOffSet() > 0); 
         Position rook_Position = (shortCastle) ? Position(7, move.m_PiecePosition.y): Position(0, move.m_PiecePosition.y);
         Position rook_DesiredPosition = (shortCastle) ? Position(move.m_DesiredPosition.x -1, move.m_PiecePosition.y) : Position(move.m_DesiredPosition.x+1, move.m_PiecePosition.y);
@@ -468,15 +468,18 @@ namespace chess{
         GameFigure** moved_Rook = &m_BoardPositions[rook_Position.index()];
 
         GameFigure* pMovedKing = (*moved_King);
+        Position movedKingPos = pMovedKing->getPosition();
         GameFigure* pMovedRook = (*moved_Rook);
 
+        pMovedKing->setPosition(move.m_DesiredPosition);
         m_BoardPositions[move.m_DesiredPosition.index()] = *moved_King;
         (*moved_King)=nullptr;
 
+        pMovedRook->setPosition(rook_DesiredPosition);
         m_BoardPositions[rook_DesiredPosition.index()] = *moved_Rook;
         (*moved_Rook)=nullptr;
 
-        return ChangedPieces( pMovedKing, nullptr , pMovedRook );
+        return ChangedPieces( pMovedKing, {movedKingPos} , nullptr , pMovedRook, {rook_Position} );
     }
     ChangedPieces Board::simulateEnPassantMove(const Move& move){
         int movementDirection = (move.m_PlayerColor == WHITE) ? 1 : -1;
