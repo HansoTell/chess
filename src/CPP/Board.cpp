@@ -47,6 +47,7 @@ namespace chess{
         m_GameState.parseGameStateJson(gameConfig);
 
         threatendSquaresInit();
+        allLegalMovesInit();
     }
 
     void Board::threatendSquaresInit(){
@@ -60,6 +61,16 @@ namespace chess{
                 const std::vector<Position>& figureThreats = figure.getThreatendSquares();
 
                 overallThreats.insert(overallThreats.end(), figureThreats.begin(), figureThreats.end());
+            }
+        }
+    }
+
+    void Board::allLegalMovesInit(){
+        for(auto& figure : m_Figures){
+            if( figure.getIsActive() ){
+                figure.updateAllLegalMoves();
+                // bei sliding pieces: Sind genau die Threats in der threat map als Moves
+                //Bei jumping Pieces: Horse genau so, King genau + casteling so ohne die die ihnin check bewegen würde, pawn besonders + enpassant behandeln
             }
         }
     }
@@ -217,6 +228,7 @@ namespace chess{
 
     void Board::updateGameState(const GameFigure* capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType){
         updateThreatendSquares(capturedFigure, move);
+        updateAllLegalMoves(move);
 
         m_GameState.updateGameState(move, moveType, movedFigureType);
 
@@ -244,6 +256,16 @@ namespace chess{
         }
 
         return {};
+    }
+
+    void Board::updateAllLegalMoves(const Move& move){
+
+        //stimmt das überhaupt?? Pawns verändert sich ja schon eigentlich nur knights wo sich nichts verändert ich meine kings wenn rook sich bewegt ja auch
+
+        GameFigure* pMovedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
+
+        
+        //Nur Figure bei denen sich auch was verändet hat updaten
     }
 
     ChangedPieces Board::simulateMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType){
@@ -277,7 +299,6 @@ namespace chess{
     }
 
     ChangedPieces Board::simulateEditBoard(GameFigure** movedFigure_ptr, GameFigure** capturedFigure_ptr, const Move& move){
-        //MÜSEN Wwir captured pieces inaktiv setzen??
 
         GameFigure* capturedFigure = (capturedFigure_ptr) ? (*capturedFigure_ptr) : nullptr;
         GameFigure* movedFigure = (movedFigure_ptr) ? (*movedFigure_ptr) : nullptr;

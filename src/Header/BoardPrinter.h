@@ -15,7 +15,7 @@ namespace chess{
         virtual FigureType getPromotionFigure() const = 0;
         virtual void printBoard(const BoardView& BoardView) const = 0;
 
-        virtual void debugThreatPrinter(const GameState& gameState, Color color) const = 0;
+        virtual void printThreats(const GameState& gameState, Color color) const = 0;
     };
 
 
@@ -24,7 +24,7 @@ namespace chess{
     public:
         FigureType getPromotionFigure() const override;
         void printBoard(const BoardView& BoardView) const override;
-        void debugThreatPrinter(const GameState& gameState, Color color) const override;
+        void printThreats(const GameState& gameState, Color color) const override;
     private:
         void printHeader() const;
         void printFooter() const;

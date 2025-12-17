@@ -7,6 +7,7 @@
 #include "GameState.h"
 #include "MoveResult.h"
 #include "MovementTypes.h"
+
 #include <string>
 #include <memory>
 #include <iostream>
@@ -23,6 +24,7 @@ namespace chess{
         FigureType m_FigureType;
         MovementTypes m_MovementType;
         std::vector<Position> m_Threats;
+        std::vector<Move> m_AllLegalMoves;
         bool m_isActive;
 
     public:
@@ -35,6 +37,7 @@ namespace chess{
     public:
         MoveResult isMoveLegal(const Move& move, const BoardView& boardView, const GameState& GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
         void updateThreats(const BoardView& BoardView) { m_Threats =  m_MovmentLogic->getThreatendSquares(m_Position, BoardView, m_Color); }
+        void updateAllLegalMoves() { m_AllLegalMoves = m_MovmentLogic->getAllLegalMoves(); };
         void setThreats(std::vector<Position>& threats) { m_Threats = threats; }
     public:
         void toggleIsActive() { m_isActive = !m_isActive; }
@@ -46,6 +49,7 @@ namespace chess{
         void setPosition(Position pos) { m_Position = pos; }
         Color getColor() const { return m_Color; }
         std::vector<Position>& getThreatendSquares()  { return m_Threats; }
+        const std::vector<Move>& getAllLegalMoves() const { return m_AllLegalMoves; }
         const std::vector<Position> getThreatendSquares() const { return m_Threats; }
         std::vector<Position> getThreatendCopySquares() const { return m_Threats; }
 

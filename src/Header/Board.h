@@ -29,11 +29,7 @@ namespace chess
     //LegalMoveCache in GameFigure --> mit entsprechenden methoden
     //Caclulate all Legal Moves --> ruft bei allen figure update moves map auf (oder vielleicht kann  man sogar bei manchen cachen wenn sie nicht bewegt wurden oder so)
     //isMoveLegal() umstellen nur von der gezougenen figur wird geguckt ob bei geogener figr move im move cache
-    //make move bleibt fast gleich nur would be in check bleibt weg
-    //eigentlich performance schlechter aber glaube auch für ai sinnvoll und für gui wäre auch sinnvoller
     
-    //ausgeschiedene Figuren müssen auf set incaktiove gesetzte werden oder so ka weil soinst vor allem mit figure finden könnte probleme machen und update threats und so
-
 
     class Board
     {
@@ -51,11 +47,13 @@ namespace chess
         void printBoard() const { m_BoardPrinter->printBoard(m_BoardView); }
         bool makeMove(const Move& move);
         bool isCheckmate(Color playerColor) const;
+        bool isStalemate() const;
 
     private:
         json parseJson(const std::string& file);
 
         void gameStateInit(const json& gameConfig);
+            void allLegalMovesInit();
         void boardinit(const json& gameConfig);
             void addFigureOffJson(const json& posData, FigureType figureType, Color color);
 
@@ -68,6 +66,8 @@ namespace chess
         void updateThreatendSquares(const GameFigure* capturedFigure, const Move& move);
             void removeOldThreats(const GameFigure* figure);
             void refreshThreats(GameFigure* figure);
+
+        void updateAllLegalMoves(const Move& move);
 
         const GameFigure* executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);
             const GameFigure* ExecuteNormalMove(const Move& move);

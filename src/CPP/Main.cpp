@@ -38,6 +38,7 @@ bool moveAusführen(chess::Board& board){
 int main(){
     std::string source ="src/utilities/test_check1.json"; 
     chess::Board board(source, std::make_unique<chess::ASCIIPrinter>());
+    //Board init methode?
 
     board.printBoard();
 
@@ -45,10 +46,19 @@ int main(){
 
         if( moveAusführen(board) ){
             board.printBoard();
+            //chematisch
+            if( board.isCheckmate(chess::opposite(g_eCurrColor)) ){
+                g_bQuit = true;
+            }
+
+            if( board.isStalemate() ){
+                g_bQuit = true;
+            }
             g_eCurrColor = chess::opposite(g_eCurrColor);
         }else{
             std::cout << "Ungültiger Move bitte versuche es erneut!" << "\n";
         }
+
     }
      
     return 0;

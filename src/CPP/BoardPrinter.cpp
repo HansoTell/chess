@@ -25,7 +25,7 @@ namespace chess{
         }
     }
 
-    void ASCIIPrinter::debugThreatPrinter(const GameState& gameState, Color color) const{
+    void ASCIIPrinter::printThreats(const GameState& gameState, Color color) const{
         printHeader();
         for(int y = 0; y<boardWidth; y++){
             std::cout << y+1 << " ";
