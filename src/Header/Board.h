@@ -67,7 +67,7 @@ namespace chess
             void removeOldThreats(const GameFigure* figure);
             void refreshThreats(GameFigure* figure);
 
-        void updateAllLegalMoves(const Move& move);
+        void updateAllLegalMoves(const GameFigure* pCapturedFigure, const Move& move);
 
         const GameFigure* executeMove(const Move& move, MoveResult moveresult, std::optional<FigureType> promotedFigureType);
             const GameFigure* ExecuteNormalMove(const Move& move);

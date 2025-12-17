@@ -228,7 +228,7 @@ namespace chess{
 
     void Board::updateGameState(const GameFigure* capturedFigure, const Move& move, std::optional<MoveType> moveType, FigureType movedFigureType){
         updateThreatendSquares(capturedFigure, move);
-        updateAllLegalMoves(move);
+        updateAllLegalMoves(capturedFigure, move);
 
         m_GameState.updateGameState(move, moveType, movedFigureType);
 
@@ -258,14 +258,29 @@ namespace chess{
         return {};
     }
 
-    void Board::updateAllLegalMoves(const Move& move){
-
-        //stimmt das überhaupt?? Pawns verändert sich ja schon eigentlich nur knights wo sich nichts verändert ich meine kings wenn rook sich bewegt ja auch
+    void Board::updateAllLegalMoves(const GameFigure* pCapturedFigure, const Move& move){
 
         GameFigure* pMovedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
 
-        
-        //Nur Figure bei denen sich auch was verändet hat updaten
+        if( pMovedFigure && pMovedFigure->getFigureType() == KNIGHT )
+            pMovedFigure->updateAllLegalMoves();
+        //wenn dann richtig
+        //Sliding nur wenn in ray von der bewegten figur oder captured fiigur verändert sich es 
+        //Knight verändert sich gar nichts außer bewegt
+        //Pawn ändert sich nur wenn direkt davor geschieht oder enpassant also auch in ray
+        //King auch in ray weil rook müsste ja sicht haben wenn casteling möglich wär
+
+
+        for(auto& figure : m_Figures){
+            if( figure.getIsActive() && figure.getFigureType() != KNIGHT && 
+                (isInRay(move.m_PiecePosition, figure.getPosition())
+                || isInRay(move.m_DesiredPosition, figure.getPosition())
+                || (pCapturedFigure && isInRay(pCapturedFigure->getPosition(), figure.getPosition()))))
+            {
+                figure.updateAllLegalMoves();
+            }
+        }
+
     }
 
     ChangedPieces Board::simulateMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType){
