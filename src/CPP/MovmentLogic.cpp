@@ -82,7 +82,6 @@ namespace chess{
             if(!isCastelingPathClear(moveCopy, BoardView, stepX, stepY))
                return false;
 
-               
             if(isShortCastle == 1 && (GameState.hasKingMoved(move.m_PlayerColor) || GameState.hasHRookMoved(move.m_PlayerColor)))
                 return false;
             
@@ -278,20 +277,27 @@ namespace chess{
         return threats;
     }
 
-    std::vector<Move> KingMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+    std::vector<Move> KingMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView, const GameState& gameState) const {
 
         std::vector<Move> allLegalMoves;
         allLegalMoves.reserve(figureThreats.size()+2);
 
         GenerateMoves::threatVectorToMoves(figurePosition, figureThreats, color, boardView, allLegalMoves);
 
-        //casteling mvoes noch hinzufügen falls möglich
-        //auch für casteling braucht es gamestate also müssen so doer so adden
+        int row = (color == WHITE) ? 0 : 7;
+        const Move shortCastle(figurePosition, { 6, row } , color);
+        const Move longCastle(figurePosition, { 2, row }  , color);
 
+        if( MoveChecks::isCastle(shortCastle, boardView, gameState) )
+            allLegalMoves.push_back(std::move(shortCastle));
+        
+        if( MoveChecks::isCastle(longCastle, boardView, gameState) )
+            allLegalMoves.push_back(std::move(longCastle));
+        
         return allLegalMoves;
     }
 
-    std::vector<Move> QueenMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+    std::vector<Move> QueenMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView, const GameState& gameState) const {
         std::vector<Move> allLegalMoves;
         allLegalMoves.reserve(figureThreats.size());
 
@@ -300,7 +306,7 @@ namespace chess{
         return allLegalMoves;
     }
 
-    std::vector<Move> RookMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+    std::vector<Move> RookMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView, const GameState& gameState) const {
         std::vector<Move> allLegalMoves;
         allLegalMoves.reserve(figureThreats.size());
 
@@ -309,7 +315,7 @@ namespace chess{
         return allLegalMoves;
     }
     
-    std::vector<Move> BishopMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+    std::vector<Move> BishopMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView, const GameState& gameState) const {
         std::vector<Move> allLegalMoves;
         allLegalMoves.reserve(figureThreats.size());
 
@@ -318,7 +324,7 @@ namespace chess{
         return allLegalMoves;
     }
 
-    std::vector<Move> KnightMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+    std::vector<Move> KnightMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView, const GameState& gameState) const {
         std::vector<Move> allLegalMoves;
         allLegalMoves.reserve(figureThreats.size());
 
@@ -327,7 +333,7 @@ namespace chess{
         return allLegalMoves;
     }
 
-    std::vector<Move> PawnMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+    std::vector<Move> PawnMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView, const GameState& gameState) const {
         std::vector<Move> allLegalMoves;
         allLegalMoves.reserve(figureThreats.size() + 2);
 

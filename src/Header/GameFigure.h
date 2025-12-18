@@ -37,7 +37,7 @@ namespace chess{
     public:
         MoveResult isMoveLegal(const Move& move, const BoardView& boardView, const GameState& GameState  ) const { return m_MovmentLogic->isMoveLegal(move, boardView, GameState); }
         void updateThreats(const BoardView& BoardView) { m_Threats =  m_MovmentLogic->getThreatendSquares(m_Position, BoardView, m_Color); }
-        void updateAllLegalMoves(const BoardView& boardView) { m_AllLegalMoves = m_MovmentLogic->getAllLegalMoves(m_Position, m_Threats, m_Color, boardView); };
+        void updateAllLegalMoves(const BoardView& boardView, const GameState& gameState) { m_AllLegalMoves = m_MovmentLogic->getAllLegalMoves(m_Position, m_Threats, m_Color, boardView, gameState); };
         void setThreats(std::vector<Position>& threats) { m_Threats = threats; }
     public:
         void toggleIsActive() { m_isActive = !m_isActive; }

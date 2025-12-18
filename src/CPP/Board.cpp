@@ -68,7 +68,7 @@ namespace chess{
     void Board::allLegalMovesInit(){
         for(auto& figure : m_Figures){
             if( figure.getIsActive() ){
-                figure.updateAllLegalMoves(m_BoardView);
+                figure.updateAllLegalMoves(m_BoardView, m_GameState);
             }
         }
     }
@@ -303,7 +303,7 @@ namespace chess{
         GameFigure* pMovedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
 
         if( pMovedFigure && pMovedFigure->getFigureType() == KNIGHT )
-            pMovedFigure->updateAllLegalMoves(m_BoardView);
+            pMovedFigure->updateAllLegalMoves(m_BoardView, m_GameState);
 
         for(auto& figure : m_Figures){
             if( figure.getIsActive() && figure.getFigureType() != KNIGHT && 
@@ -311,7 +311,7 @@ namespace chess{
                 || isInRay(move.m_DesiredPosition, figure.getPosition())
                 || (pCapturedFigure && isInRay(pCapturedFigure->getPosition(), figure.getPosition()))))
             {
-                figure.updateAllLegalMoves(m_BoardView);
+                figure.updateAllLegalMoves(m_BoardView, m_GameState);
             }
         }
     }
