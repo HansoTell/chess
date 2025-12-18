@@ -68,16 +68,24 @@ namespace chess{
     void Board::allLegalMovesInit(){
         for(auto& figure : m_Figures){
             if( figure.getIsActive() ){
-                figure.updateAllLegalMoves();
-                // bei sliding pieces: Sind genau die Threats in der threat map als Moves
-                //Bei jumping Pieces: Horse genau so, King genau + casteling so ohne die die ihnin check bewegen würde, pawn besonders + enpassant behandeln
+                figure.updateAllLegalMoves(m_BoardView);
             }
         }
+    }
+
+    bool Board::isCheckmate(Color playerColor) const {
+        return false;
+    }
+
+    bool Board::isStalemate() const {
+        return false;
     }
 
     void Board::updateThreatendSquares(const GameFigure* capturedFigure, const Move& move){
 
         GameFigure* movedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
+        GameFigure* pWhiteKing = nullptr;
+        GameFigure* pBlackKing = nullptr;
 
         if(capturedFigure)
             removeOldThreats(capturedFigure);
@@ -88,6 +96,13 @@ namespace chess{
         }
 
         for(auto& figure : m_Figures){
+            if( figure.getFigureType() == KING ){
+                if(figure.getColor() == WHITE)
+                    pWhiteKing = &figure;
+                else
+                    pBlackKing = &figure;
+            }
+
             if( figure.getIsActive() &&  figure.getMovementType() == SLIDING && 
                     (isInRay(move.m_PiecePosition, figure.getPosition()) 
                     || isInRay(move.m_DesiredPosition, figure.getPosition()) 
@@ -98,6 +113,9 @@ namespace chess{
                 refreshThreats(figure_ptr);
             }
         }
+
+        removeThreatendKingThreats(pWhiteKing, WHITE);
+        removeThreatendKingThreats(pBlackKing, BLACK);
     }
 
     CachedThreats Board::simulateUpdateThreatendSquares(GameFigure* capturedFigure, const Move& move){
@@ -173,6 +191,28 @@ namespace chess{
         }
         
         ownColorThreats.insert(ownColorThreats.end(), figure->getThreatendSquares().begin(), figure->getThreatendSquares().end());
+    }
+
+    void Board::removeThreatendKingThreats(GameFigure* pKing, Color kingColor){
+        if( !pKing )
+            return;
+
+        std::vector<Position>& kingThreats = pKing->getThreatendSquares();
+
+        std::vector<Position>& ownColorThreatMap = m_GameState.getThreatendSquares(kingColor);
+        std::vector<Position>& enemyColorThreatMap = m_GameState.getThreatendSquares(opposite(kingColor));
+
+        for(Position kingThreat : kingThreats){
+            if( std::find(enemyColorThreatMap.begin(), enemyColorThreatMap.end(), kingThreat) != enemyColorThreatMap.end() ){
+                auto threatMap_IT = std::find( ownColorThreatMap.begin(), ownColorThreatMap.end(), kingThreat);
+                if( threatMap_IT != ownColorThreatMap.end() )
+                    ownColorThreatMap.erase(threatMap_IT);
+                
+                auto kingThreat_IT = std::find(kingThreats.begin(), kingThreats.end(), kingThreat);
+                if( kingThreat_IT != kingThreats.end() )
+                    kingThreats.erase(kingThreat_IT);
+            }
+        }
     }
 
     void Board::boardinit(const json& gameConfig){
@@ -263,13 +303,7 @@ namespace chess{
         GameFigure* pMovedFigure = m_BoardPositions[move.m_DesiredPosition.index()];
 
         if( pMovedFigure && pMovedFigure->getFigureType() == KNIGHT )
-            pMovedFigure->updateAllLegalMoves();
-        //wenn dann richtig
-        //Sliding nur wenn in ray von der bewegten figur oder captured fiigur verändert sich es 
-        //Knight verändert sich gar nichts außer bewegt
-        //Pawn ändert sich nur wenn direkt davor geschieht oder enpassant also auch in ray
-        //King auch in ray weil rook müsste ja sicht haben wenn casteling möglich wär
-
+            pMovedFigure->updateAllLegalMoves(m_BoardView);
 
         for(auto& figure : m_Figures){
             if( figure.getIsActive() && figure.getFigureType() != KNIGHT && 
@@ -277,10 +311,9 @@ namespace chess{
                 || isInRay(move.m_DesiredPosition, figure.getPosition())
                 || (pCapturedFigure && isInRay(pCapturedFigure->getPosition(), figure.getPosition()))))
             {
-                figure.updateAllLegalMoves();
+                figure.updateAllLegalMoves(m_BoardView);
             }
         }
-
     }
 
     ChangedPieces Board::simulateMove(const Move& move, MoveResult moveResult, std::optional<FigureType> promotedFigureType){

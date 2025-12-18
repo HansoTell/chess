@@ -19,7 +19,7 @@ namespace chess{
         virtual ~MovementLogic() = default;
         virtual MoveResult isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const = 0; 
         virtual std::vector<Position> getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const = 0;
-        virtual std::vector<Move> getAllLegalMoves() const = 0;
+        virtual std::vector<Move> getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const = 0;
         virtual std::unique_ptr<MovementLogic> clone() const = 0;
     };
 
@@ -27,7 +27,7 @@ namespace chess{
     public:
         MoveResult isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const override;
         std::vector<Position> getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const override;
-        std::vector<Move> getAllLegalMoves() const override;
+        std::vector<Move> getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const override;
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<KingMovement>(*this); }
     };
 
@@ -36,7 +36,7 @@ namespace chess{
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<QueenMovement>(*this); }
         MoveResult isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const override;
         std::vector<Position> getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const override;
-        std::vector<Move> getAllLegalMoves() const override;
+        std::vector<Move> getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const override;
     };
 
     class RookMovement : public MovementLogic{
@@ -44,7 +44,7 @@ namespace chess{
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<RookMovement>(*this); }
         MoveResult isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const override;
         std::vector<Position> getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const override;
-        std::vector<Move> getAllLegalMoves() const override;
+        std::vector<Move> getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const override;
     };
 
     class BishopMovement : public MovementLogic{
@@ -52,7 +52,7 @@ namespace chess{
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<BishopMovement>(*this); }
         MoveResult isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const override;
         std::vector<Position> getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const override;
-        std::vector<Move> getAllLegalMoves() const override;
+        std::vector<Move> getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const override;
     };
 
     class KnightMovement : public MovementLogic{
@@ -60,7 +60,7 @@ namespace chess{
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<KnightMovement>(*this); }
         MoveResult isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const override;
         std::vector<Position> getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const override;
-        std::vector<Move> getAllLegalMoves() const override;
+        std::vector<Move> getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const override;
     };
 
     class PawnMovement : public MovementLogic{
@@ -68,7 +68,7 @@ namespace chess{
         std::unique_ptr<MovementLogic> clone() const override { return std::make_unique<PawnMovement>(*this); }
         MoveResult isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const override;
         std::vector<Position> getThreatendSquares(const Position figPos, const BoardView& BoardView, Color color) const override;
-        std::vector<Move> getAllLegalMoves() const override;
+        std::vector<Move> getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const override;
     protected:
         bool isDiagonalPathClear(const Move& move, const BoardView& BoardView) const { return BoardView.getFigureAt(move.m_DesiredPosition); }
     };

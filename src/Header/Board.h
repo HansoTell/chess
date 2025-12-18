@@ -66,6 +66,7 @@ namespace chess
         void updateThreatendSquares(const GameFigure* capturedFigure, const Move& move);
             void removeOldThreats(const GameFigure* figure);
             void refreshThreats(GameFigure* figure);
+            void removeThreatendKingThreats(GameFigure* pKing, Color kingColor);
 
         void updateAllLegalMoves(const GameFigure* pCapturedFigure, const Move& move);
 

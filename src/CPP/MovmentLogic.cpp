@@ -124,6 +124,17 @@ namespace chess{
         }
     }
 
+    namespace GenerateMoves {
+        static void threatVectorToMoves(Position figurePos, const std::vector<Position> threatMap, Color color, const BoardView& boardView , std::vector<Move>& outMoves){
+            for(Position desiredPos : threatMap){
+                if( boardView.getFigureAt(desiredPos) && boardView.getFigureAt(desiredPos)->getColor() == color )
+                    continue;
+
+                outMoves.emplace_back(figurePos, desiredPos, color);
+            }
+        }
+    }
+
     MoveResult RookMovement::isMoveLegal(const Move& move, const BoardView& BoardView, const GameState& GameState) const {
         if(MoveChecks::isStraigt(move)){
 
@@ -265,5 +276,80 @@ namespace chess{
             }
         }
         return threats;
+    }
+
+    std::vector<Move> KingMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+
+        std::vector<Move> allLegalMoves;
+        allLegalMoves.reserve(figureThreats.size()+2);
+
+        GenerateMoves::threatVectorToMoves(figurePosition, figureThreats, color, boardView, allLegalMoves);
+
+        //casteling mvoes noch hinzufügen falls möglich
+        //auch für casteling braucht es gamestate also müssen so doer so adden
+
+        return allLegalMoves;
+    }
+
+    std::vector<Move> QueenMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+        std::vector<Move> allLegalMoves;
+        allLegalMoves.reserve(figureThreats.size());
+
+        GenerateMoves::threatVectorToMoves(figurePosition, figureThreats, color, boardView, allLegalMoves);
+
+        return allLegalMoves;
+    }
+
+    std::vector<Move> RookMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+        std::vector<Move> allLegalMoves;
+        allLegalMoves.reserve(figureThreats.size());
+
+        GenerateMoves::threatVectorToMoves(figurePosition, figureThreats, color, boardView, allLegalMoves);
+
+        return allLegalMoves;
+    }
+    
+    std::vector<Move> BishopMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+        std::vector<Move> allLegalMoves;
+        allLegalMoves.reserve(figureThreats.size());
+
+        GenerateMoves::threatVectorToMoves(figurePosition, figureThreats, color, boardView, allLegalMoves);
+
+        return allLegalMoves;
+    }
+
+    std::vector<Move> KnightMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+        std::vector<Move> allLegalMoves;
+        allLegalMoves.reserve(figureThreats.size());
+
+        GenerateMoves::threatVectorToMoves(figurePosition, figureThreats, color, boardView, allLegalMoves);
+
+        return allLegalMoves;
+    }
+
+    std::vector<Move> PawnMovement::getAllLegalMoves(Position figurePosition, const std::vector<Position>& figureThreats, Color color, const BoardView& boardView) const {
+        std::vector<Move> allLegalMoves;
+        allLegalMoves.reserve(figureThreats.size() + 2);
+
+        GenerateMoves::threatVectorToMoves(figurePosition, figureThreats, color, boardView, allLegalMoves);
+
+        int moveDirection = (color == WHITE) ? 1 : -1; 
+
+        Position oneStepStraight(figurePosition.x, figurePosition.y + moveDirection);
+        Position twoStepStraight(figurePosition.x, oneStepStraight.y + moveDirection);
+
+        if( boardView.getFigureAt( { figurePosition.x, figurePosition.y + moveDirection } )){
+            return allLegalMoves;
+        }
+
+        allLegalMoves.emplace_back(figurePosition, oneStepStraight, color);
+
+
+        if( boardView.getFigureAt(twoStepStraight) )
+            return allLegalMoves;
+
+        allLegalMoves.emplace_back(figurePosition, twoStepStraight, color);
+
+        return allLegalMoves;
     }
 }
